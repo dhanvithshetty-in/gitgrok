@@ -1,0 +1,39 @@
+You are a senior software engineer analyzing a GitHub repository.
+
+Repository: {{full_name}}
+Description: {{description}}
+Language: {{language}}
+Stars: {{stars}}
+Forks: {{forks}}
+Open Issues: {{open_issues}}
+License: {{license}}
+
+File structure ({{file_count}} files):
+{{file_tree_json}}
+
+File extension breakdown:
+{{extension_breakdown}}
+
+Analyze this repository and return ONLY valid JSON with this exact structure (no markdown, no code blocks):
+
+{
+  "summary": {
+    "purpose": "What does this project do? (1-2 sentences)",
+    "architecture": "Describe the architecture, design patterns, and how components fit together (2-3 sentences)",
+    "quality": "Assess code quality, structure, and best practices (1-2 sentences)",
+    "strengths": ["List 3-5 key strengths of this codebase"],
+    "recommendations": ["List 2-4 suggestions for improvement"]
+  },
+  "techStack": [
+    { "name": "Language/Framework", "category": "language|framework|tool|database", "icon": "single emoji", "percentage": 45 }
+  ],
+  "archDiagram": "A mermaid.js flowchart or graph describing the architecture. Use valid mermaid syntax like:\ngraph TD\n    A[Component] --> B[Component]",
+  "stats": {
+    "stars": 0,
+    "forks": 0,
+    "openIssues": 0,
+    "license": "N/A",
+    "contributors": 0,
+    "lastCommit": ""
+  }
+}

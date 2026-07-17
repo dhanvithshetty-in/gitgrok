@@ -1,0 +1,104 @@
+{
+  "name": "GitGrok — Chat Q&A",
+  "nodes": [
+    {
+      "id": "webhook-chat",
+      "name": "Webhook (Chat)",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [250, 300],
+      "parameters": {
+        "path": "gitgrok-chat",
+        "responseMode": "responseNode",
+        "options": {},
+        "httpMethod": "POST",
+        "responseData": "allEntries"
+      },
+      "webhookId": "gitgrok-chat"
+    },
+    {
+      "id": "build-chat-prompt",
+      "name": "Build Chat Prompt",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [450, 300],
+      "parameters": {
+        "language": "javaScript",
+        "code": "const body = $input.first().json.body || $input.first().json;\n\nconst systemMessage = `You are a senior software engineer answering questions about a GitHub repository.\nUse the repository context provided below to answer accurately.\nBe concise and specific. Reference file names and code patterns when relevant.`;\n\nconst userPrompt = `Repository context:\n${body.context || 'No additional context provided.'}\n\nUser question: ${body.message}\n\nAnswer the question based on the repository analysis. Be specific and reference actual file names or patterns when possible.`;\n\nreturn {\n  prompt: userPrompt,\n  systemMessage,\n  analysisId: body.analysisId\n};"
+      }
+    },
+    {
+      "id": "chat-ai-agent",
+      "name": "Groq Chat",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1,
+      "position": [650, 300],
+      "parameters": {
+        "systemMessage": "={{ $json.systemMessage }}",
+        "agentType": "simpleAgent",
+        "options": {},
+        "promptType": "define",
+        "prompt": "={{ $json.prompt }}"
+      }
+    },
+    {
+      "id": "chat-groq-model",
+      "name": "Groq Chat Model",
+      "type": "@n8n/n8n-nodes-langchain.groqChat",
+      "typeVersion": 1,
+      "position": [650, 500],
+      "parameters": {
+        "model": "llama-3.3-70b-versatile",
+        "temperature": 0.7,
+        "maxTokens": 2048
+      },
+      "credentials": {
+        "groqApi": "groq"
+      }
+    },
+    {
+      "id": "format-chat-response",
+      "name": "Format Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [850, 300],
+      "parameters": {
+        "language": "javaScript",
+        "code": "const aiOutput = $input.first().json;\nconst answer = aiOutput.output || aiOutput.text || aiOutput.message || aiOutput.response || '';\n\nreturn {\n  type: 'done',\n  content: answer\n};"
+      }
+    },
+    {
+      "id": "respond-chat",
+      "name": "Respond to Webhook",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [1050, 300],
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json }}"
+      }
+    }
+  ],
+  "connections": {
+    "webhook-chat": {
+      "main": [[ { "node": "build-chat-prompt", "type": "main", "index": 0 } ]]
+    },
+    "build-chat-prompt": {
+      "main": [[ { "node": "chat-ai-agent", "type": "main", "index": 0 } ]]
+    },
+    "chat-ai-agent": {
+      "main": [[ { "node": "format-chat-response", "type": "main", "index": 0 } ]]
+    },
+    "format-chat-response": {
+      "main": [[ { "node": "respond-chat", "type": "main", "index": 0 } ]]
+    }
+  },
+  "pinData": {},
+  "versionId": "1",
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "tags": [],
+  "staticData": null
+}

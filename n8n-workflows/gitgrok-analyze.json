@@ -1,0 +1,177 @@
+{
+  "name": "GitGrok — Analyze Repository",
+  "nodes": [
+    {
+      "id": "webhook-entry",
+      "name": "Webhook (Receive)",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [250, 300],
+      "parameters": {
+        "path": "gitgrok-analyze",
+        "responseMode": "responseNode",
+        "options": {},
+        "httpMethod": "POST",
+        "responseData": "allEntries"
+      },
+      "webhookId": "gitgrok-analyze"
+    },
+    {
+      "id": "parse-url",
+      "name": "Parse Repo URL",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [450, 300],
+      "parameters": {
+        "language": "javaScript",
+        "code": "// Extract owner/repo from GitHub URL\nconst repoUrl = $input.first().json.body.repoUrl || $input.first().json.repoUrl;\nconst branch = $input.first().json.body.branch || $input.first().json.branch || 'main';\n\nlet owner = '', repo = '';\ntry {\n  const match = repoUrl.match(/github\\.com\\/([^/]+)\\/([^/]+?)(?:\\.git)?(?:\\/|$)/);\n  if (match) {\n    owner = match[1];\n    repo = match[2].replace('.git', '');\n  }\n} catch (e) {\n  throw new Error('Invalid GitHub URL');\n}\n\nreturn { owner, repo, branch, repoUrl };"
+      }
+    },
+    {
+      "id": "github-metadata",
+      "name": "GitHub — Repo Metadata",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [650, 200],
+      "parameters": {
+        "method": "GET",
+        "url": "=https://api.github.com/repos/{{ $json.owner }}/{{ $json.repo }}",
+        "options": {
+          "headers": {
+            "Accept": "application/vnd.github.v3+json",
+            "User-Agent": "GitGrok"
+          },
+          "response": {
+            "response": {
+              "responseFormat": "json"
+            }
+          }
+        },
+        "sendQuery": false,
+        "sendBody": false,
+        "sendHeaders": true
+      }
+    },
+    {
+      "id": "github-tree",
+      "name": "GitHub — File Tree",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [650, 450],
+      "parameters": {
+        "method": "GET",
+        "url": "=https://api.github.com/repos/{{ $json.owner }}/{{ $json.repo }}/git/trees/{{ $json.branch }}?recursive=1",
+        "options": {
+          "headers": {
+            "Accept": "application/vnd.github.v3+json",
+            "User-Agent": "GitGrok"
+          },
+          "response": {
+            "responseFormat": "json"
+          }
+        },
+        "sendQuery": false,
+        "sendBody": false,
+        "sendHeaders": true
+      }
+    },
+    {
+      "id": "merge-data",
+      "name": "Merge & Build Prompt",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [850, 300],
+      "parameters": {
+        "language": "javaScript",
+        "code": "// Merge all GitHub data and build the AI prompt\nconst metadata = $input.all()[0];\nconst treeData = $input.all()[1];\n\nconst repoInfo = metadata.json;\nconst treeInfo = treeData.json;\n\n// Convert GitHub tree to simplified file nodes\nfunction buildFileTree(items) {\n  const tree = [];\n  const map = {};\n  \n  items.forEach(item => {\n    const parts = item.path.split('/');\n    let current = tree;\n    let currentPath = '';\n    \n    parts.forEach((part, i) => {\n      currentPath = currentPath ? `${currentPath}/${part}` : part;\n      const isLast = i === parts.length - 1;\n      \n      if (isLast) {\n        current.push({\n          name: part,\n          path: currentPath,\n          type: item.type === 'tree' ? 'dir' : 'file',\n          size: item.size || 0\n        });\n      } else {\n        let existing = current.find(n => n.name === part && n.type === 'dir');\n        if (!existing) {\n          existing = { name: part, path: currentPath, type: 'dir', children: [] };\n          current.push(existing);\n        }\n        current = existing.children;\n      }\n    });\n  });\n  \n  return tree;\n}\n\nconst fileTree = treeInfo.tree ? buildFileTree(treeInfo.tree) : [];\n\n// Detect languages from tree\nconst extensionMap = {};\ntreeInfo.tree?.forEach(item => {\n  if (item.type === 'blob') {\n    const ext = item.path.split('.').pop()?.toLowerCase();\n    if (ext && ext.length < 10) {\n      extensionMap[ext] = (extensionMap[ext] || 0) + (item.size || 1);\n    }\n  }\n});\n\n// Build the AI prompt\nconst prompt = `You are a senior software engineer analyzing a GitHub repository.\n\nRepository: ${repoInfo.full_name || repoInfo.name}\nDescription: ${repoInfo.description || 'N/A'}\nLanguage: ${repoInfo.language || 'Unknown'}\nStars: ${repoInfo.stargazers_count}\nForks: ${repoInfo.forks_count}\nOpen Issues: ${repoInfo.open_issues_count}\nLicense: ${repoInfo.license?.spdx_id || 'N/A'}\n\nFile structure (${treeInfo.tree?.length || 0} files):\n${JSON.stringify(fileTree, null, 2).slice(0, 8000)}\n\nFile extension breakdown:\n${JSON.stringify(extensionMap, null, 2)}\n\nAnalyze this repository and return ONLY valid JSON with this exact structure (no markdown, no code blocks):\n{\n  \"summary\": {\n    \"purpose\": \"What does this project do? (1-2 sentences)\",\n    \"architecture\": \"Describe the architecture, design patterns, and how components fit together (2-3 sentences)\",\n    \"quality\": \"Assess code quality, structure, and best practices (1-2 sentences)\",\n    \"strengths\": [\"List 3-5 key strengths of this codebase\"],\n    \"recommendations\": [\"List 2-4 suggestions for improvement\"]\n  },\n  \"techStack\": [\n    { \"name\": \"Language/Framework\", \"category\": \"language|framework|tool|database\", \"icon\": \"single emoji\", \"percentage\": 45 }\n  ],\n  \"archDiagram\": \"A mermaid.js flowchart or graph describing the architecture. Use valid mermaid syntax like: graph TD\\n    A[Component] --> B[Component]\",\n  \"stats\": {\n    \"stars\": ${repoInfo.stargazers_count || 0},\n    \"forks\": ${repoInfo.forks_count || 0},\n    \"openIssues\": ${repoInfo.open_issues_count || 0},\n    \"license\": \"${repoInfo.license?.spdx_id || 'N/A'}\",\n    \"contributors\": 0,\n    \"lastCommit\": \"${repoInfo.updated_at || ''}\"\n  }\n}`;\n\nreturn {\n  prompt,\n  repoUrl: `https://github.com/${repoInfo.full_name || ''}`,\n  branch: $json.branch || 'main',\n  repoInfo\n};"
+      }
+    },
+    {
+      "id": "ai-agent",
+      "name": "AI Agent (Groq)",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1,
+      "position": [1050, 300],
+      "parameters": {
+        "systemMessage": "You are a senior software engineer analyzing GitHub repositories. Always respond with valid JSON only.",
+        "agentType": "simpleAgent",
+        "options": {},
+        "promptType": "define",
+        "prompt": "={{ $json.prompt }}"
+      }
+    },
+    {
+      "id": "groq-model",
+      "name": "Groq Chat Model",
+      "type": "@n8n/n8n-nodes-langchain.groqChat",
+      "typeVersion": 1,
+      "position": [1050, 500],
+      "parameters": {
+        "model": "llama-3.3-70b-versatile",
+        "temperature": 0.3,
+        "maxTokens": 4096
+      },
+      "credentials": {
+        "groqApi": "groq"
+      }
+    },
+    {
+      "id": "parse-result",
+      "name": "Parse AI Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1250, 300],
+      "parameters": {
+        "language": "javaScript",
+        "code": "// Parse AI response into structured JSON\nconst aiOutput = $input.first().json;\nlet analysis = aiOutput.output || aiOutput.text || aiOutput.message || aiOutput.response || '{}';\n\n// Try to extract JSON if wrapped in markdown code blocks\nconst jsonMatch = analysis.match(/\\{[\\s\\S]*\\}/);\nif (jsonMatch) {\n  analysis = jsonMatch[0];\n}\n\ntry {\n  const parsed = typeof analysis === 'string' ? JSON.parse(analysis) : analysis;\n  \n  return {\n    id: $json._webhookId || Date.now().toString(),\n    repoUrl: $json.repoUrl || '',\n    branch: $json.branch || 'main',\n    analyzedAt: new Date().toISOString(),\n    summary: parsed.summary || { purpose: '', architecture: '', quality: '', strengths: [], recommendations: [] },\n    techStack: parsed.techStack || [],\n    fileTree: parsed.fileTree || $json.repoInfo?.fileTree || [],\n    archDiagram: parsed.archDiagram || '',\n    stats: parsed.stats || { stars: 0, forks: 0, openIssues: 0, license: 'N/A', contributors: 0, lastCommit: '' }\n  };\n} catch (e) {\n  return {\n    id: Date.now().toString(),\n    repoUrl: $json.repoUrl || '',\n    branch: $json.branch || 'main',\n    analyzedAt: new Date().toISOString(),\n    summary: {\n      purpose: 'Analysis completed but parsing failed.',\n      architecture: '',\n      quality: '',\n      strengths: [],\n      recommendations: []\n    },\n    techStack: [],\n    fileTree: $json.repoInfo?.fileTree || [],\n    archDiagram: '',\n    stats: { stars: 0, forks: 0, openIssues: 0, license: 'N/A', contributors: 0, lastCommit: '' },\n    rawOutput: typeof analysis === 'string' ? analysis.slice(0, 2000) : JSON.stringify(analysis).slice(0, 2000)\n  };\n}"
+      }
+    },
+    {
+      "id": "respond-webhook",
+      "name": "Respond to Webhook",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [1450, 300],
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json }}"
+      }
+    }
+  ],
+  "connections": {
+    "webhook-entry": {
+      "main": [[ { "node": "parse-url", "type": "main", "index": 0 } ]]
+    },
+    "parse-url": {
+      "main": [
+        [
+          { "node": "github-metadata", "type": "main", "index": 0 },
+          { "node": "github-tree", "type": "main", "index": 0 }
+        ]
+      ]
+    },
+    "github-metadata": {
+      "main": [[ { "node": "merge-data", "type": "main", "index": 0 } ]]
+    },
+    "github-tree": {
+      "main": [[ { "node": "merge-data", "type": "main", "index": 1 } ]]
+    },
+    "merge-data": {
+      "main": [[ { "node": "ai-agent", "type": "main", "index": 0 } ]]
+    },
+    "ai-agent": {
+      "main": [[ { "node": "parse-result", "type": "main", "index": 0 } ]]
+    },
+    "parse-result": {
+      "main": [[ { "node": "respond-webhook", "type": "main", "index": 0 } ]]
+    }
+  },
+  "pinData": {},
+  "versionId": "1",
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "tags": [],
+  "staticData": null
+}
