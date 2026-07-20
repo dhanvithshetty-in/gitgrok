@@ -63,7 +63,7 @@ export default function RepoInput({ onSubmit, isLoading }: RepoInputProps) {
             type="submit"
             disabled={isLoading || !url.includes('github.com')}
             className="btn-accent"
-            style={{ marginLeft: 'auto', fontSize: 13, padding: '9px 18px' }}
+            style={{ marginLeft: 'auto' }}
           >
             {isLoading ? (
               <>
@@ -71,8 +71,8 @@ export default function RepoInput({ onSubmit, isLoading }: RepoInputProps) {
                   width: 14,
                   height: 14,
                   borderRadius: '50%',
-                  border: '2px solid rgba(255,255,255,0.3)',
-                  borderTopColor: '#fff',
+                  border: '2px solid rgba(255,255,255,0.25)',
+                  borderTopColor: 'var(--btn-text)',
                   animation: 'spin 0.8s linear infinite',
                 }} />
                 Analyzing...

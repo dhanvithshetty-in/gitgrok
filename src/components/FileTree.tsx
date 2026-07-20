@@ -5,17 +5,51 @@ interface FileTreeProps {
   nodes: FileNode[]
 }
 
-function FileIcon({ name, type }: { name: string; type: string }) {
-  if (type === 'dir') return <span>📁</span>
+function Chevron({ expanded }: { expanded: boolean }) {
+  return (
+    <svg
+      width="10"
+      height="10"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2.5"
+      strokeLinecap="round"
+      style={{
+        color: 'var(--text-tertiary)',
+        flexShrink: 0,
+        transition: 'transform 0.15s',
+        transform: expanded ? 'rotate(90deg)' : 'rotate(0deg)',
+      }}
+    >
+      <polyline points="9 18 15 12 9 6" />
+    </svg>
+  )
+}
+
+function Dot({ color }: { color: string }) {
+  return (
+    <span style={{
+      width: 8,
+      height: 8,
+      borderRadius: '50%',
+      background: color,
+      flexShrink: 0,
+    }} />
+  )
+}
+
+function FileLabel({ name, type }: { name: string; type: string }) {
   const ext = name.split('.').pop()?.toLowerCase()
-  const icons: Record<string, string> = {
-    ts: '🔷', tsx: '⚛️', js: '🟨', jsx: '⚛️',
-    py: '🐍', rs: '🦀', go: '🔵', java: '☕',
-    json: '📋', md: '📝', yml: '⚙️', yaml: '⚙️',
-    css: '🎨', scss: '🎨', html: '🌐', sql: '🗃️',
-    toml: '⚙️', lock: '🔒', gitignore: '🙈',
+  const dot: Record<string, string> = {
+    ts: '#3178C6', tsx: '#3178C6', js: '#F7DF1E', jsx: '#61DAFB',
+    py: '#3776AB', rs: '#DEA584', go: '#00ADD8', java: '#B07219',
+    json: '#5C5C5C', md: '#4A9B8F', yml: '#8B5CF6', yaml: '#8B5CF6',
+    css: '#1572B6', scss: '#BF4080', html: '#E34F26', sql: '#E38C00',
+    toml: '#8B5CF6', lock: '#5C5C5C', gitignore: '#5C5C5C',
   }
-  return <span>{icons[ext || ''] || '📄'}</span>
+  const color = type === 'dir' ? 'var(--accent)' : (dot[ext || ''] || 'var(--text-tertiary)')
+  return <Dot color={color} />
 }
 
 function TreeNode({ node, depth }: { node: FileNode; depth: number }) {
@@ -26,6 +60,7 @@ function TreeNode({ node, depth }: { node: FileNode; depth: number }) {
     <div>
       <button
         onClick={() => hasChildren && setExpanded(!expanded)}
+        className="tree-row"
         style={{
           width: '100%',
           display: 'flex',
@@ -42,22 +77,11 @@ function TreeNode({ node, depth }: { node: FileNode; depth: number }) {
           fontFamily: 'var(--font-body)',
           transition: 'background 0.12s',
         }}
-        onMouseEnter={e => { if (hasChildren) e.currentTarget.style.background = 'var(--accent-soft)' }}
-        onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
       >
-        {hasChildren ? (
-          <span style={{
-            fontSize: 9,
-            color: 'var(--text-secondary)',
-            width: 12,
-            textAlign: 'center',
-            transition: 'transform 0.15s',
-            transform: expanded ? 'rotate(90deg)' : 'rotate(0deg)',
-          }}>▶</span>
-        ) : (
-          <span style={{ width: 12 }} />
-        )}
-        <FileIcon name={node.name} type={node.type} />
+        <span style={{ width: 12, display: 'flex', justifyContent: 'center', flexShrink: 0 }}>
+          {hasChildren ? <Chevron expanded={expanded} /> : null}
+        </span>
+        <FileLabel name={node.name} type={node.type} />
         <span style={{
           color: 'var(--text-heading)',
           fontWeight: node.type === 'dir' ? 500 : 400,
@@ -69,8 +93,9 @@ function TreeNode({ node, depth }: { node: FileNode; depth: number }) {
           <span style={{
             marginLeft: 'auto',
             fontSize: 10,
-            color: 'var(--text-secondary)',
+            color: 'var(--text-tertiary)',
             fontFamily: 'var(--font-mono)',
+            flexShrink: 0,
           }}>{node.language}</span>
         )}
       </button>

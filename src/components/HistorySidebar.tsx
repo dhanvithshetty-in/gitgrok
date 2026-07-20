@@ -17,7 +17,10 @@ export default function HistorySidebar({ items, onSelect, onDelete, activeId }: 
   if (items.length === 0) {
     return (
       <div className="surface" style={{ padding: 24, textAlign: 'center' }}>
-        <div style={{ fontSize: 24, marginBottom: 8, opacity: 0.4 }}>📋</div>
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" style={{ color: 'var(--text-tertiary)', marginBottom: 10, opacity: 0.4 }}>
+          <circle cx="12" cy="12" r="10" />
+          <polyline points="12 6 12 12 16 14" />
+        </svg>
         <p style={{ fontSize: 13, color: 'var(--text-secondary)' }}>No analyses yet</p>
         <p style={{ fontSize: 11, color: 'var(--text-tertiary)', marginTop: 4 }}>
           Results appear here
@@ -38,12 +41,11 @@ export default function HistorySidebar({ items, onSelect, onDelete, activeId }: 
         {items.map(item => (
           <div
             key={item.id}
-            className="animate-fade-in history-row"
+            className="history-row"
             style={{
               padding: '12px 16px',
               cursor: 'pointer',
               borderBottom: '1px solid var(--border-subtle)',
-              transition: 'background 0.12s',
               background: activeId === item.id ? 'var(--accent-soft)' : 'transparent',
             }}
             onClick={() => onSelect(item.id)}

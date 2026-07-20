@@ -125,11 +125,12 @@ function App() {
     <div className="min-h-screen" style={{ background: 'var(--bg)' }}>
       <header style={{
         borderBottom: '1px solid var(--border)',
-        background: 'rgba(248, 249, 251, 0.8)',
+        background: 'var(--glass-bg)',
         position: 'sticky',
         top: 0,
         zIndex: 50,
-        backdropFilter: 'blur(12px)',
+        backdropFilter: 'blur(16px)',
+        WebkitBackdropFilter: 'blur(16px)',
       }}>
         <div style={{
           maxWidth: 1200,
@@ -160,8 +161,7 @@ function App() {
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             {!analysis && !isLoading && (
-              <button className="btn-accent" onClick={handleTryDemo} style={{ fontSize: 13, padding: '8px 16px' }}>
-                <span>🚀</span>
+              <button className="btn-accent" onClick={handleTryDemo} style={{ padding: '9px 18px', fontSize: 13 }}>
                 Try Demo
               </button>
             )}
@@ -180,72 +180,85 @@ function App() {
 
       <main style={{ maxWidth: 1200, margin: '0 auto', padding: '32px 24px' }}>
         {!analysis && !isLoading && !error && (
-          <div className="splash-pattern" style={{ maxWidth: 560, margin: '60px auto 0', textAlign: 'center' }}>
-            <div className="animate-fade-in-up stagger-1" style={{ marginBottom: 40 }}>
-              <div style={{
-                width: 56,
-                height: 56,
-                borderRadius: 16,
-                background: 'var(--accent-soft)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                margin: '0 auto 24px',
-                fontSize: 28,
-              }}>🔍</div>
-              <h2 style={{
-                fontFamily: 'var(--font-heading)',
-                fontSize: 'var(--fs-2xl)',
-                fontWeight: 700,
-                color: 'var(--text-heading)',
-                marginBottom: 10,
-                lineHeight: 1.2,
-              }}>
-                Understand any<br />GitHub repository
-              </h2>
-              <p style={{
-                fontSize: 15,
-                color: 'var(--text)',
-                lineHeight: 1.6,
-                maxWidth: 420,
-                margin: '0 auto',
-              }}>
-                Paste a repository URL and get instant AI-powered analysis — architecture overview,
-                tech stack, file structure, and dependency graphs.
-              </p>
-            </div>
+          <div className="splash-hero animate-fade-in">
+            <div className="splash-blob splash-blob-1" />
+            <div className="splash-blob splash-blob-2" />
+            <div className="splash-blob splash-blob-3" />
 
-            <div className="animate-fade-in-up stagger-3">
-              <button className="btn-accent" onClick={handleTryDemo} style={{
-                fontSize: 15,
-                padding: '14px 28px',
-                borderRadius: 10,
-                marginBottom: 28,
-              }}>
-                <span>🚀</span>
-                Try Demo Analysis
-              </button>
-            </div>
+            <div style={{ position: 'relative', zIndex: 1, maxWidth: 600, margin: '0 auto', textAlign: 'center' }}>
+              <div className="animate-fade-in-up">
+                <div className="splash-icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
+                    <circle cx="11" cy="11" r="8" />
+                    <line x1="21" y1="21" x2="16.65" y2="16.65" />
+                    <path d="M11 8v6" strokeWidth="2" />
+                    <path d="M8 11h6" strokeWidth="2" />
+                  </svg>
+                </div>
+                <h2 className="splash-heading" style={{
+                  fontFamily: 'var(--font-heading)',
+                  fontWeight: 700,
+                  color: 'var(--text-heading)',
+                }}>
+                  Understand any<br />GitHub repository
+                </h2>
+                <p style={{
+                  fontSize: 15,
+                  color: 'var(--text)',
+                  lineHeight: 1.7,
+                  maxWidth: 440,
+                  margin: '0 auto',
+                }}>
+                  Paste a repository URL and get instant AI-powered analysis — architecture overview,
+                  tech stack, file structure, and dependency graphs.
+                </p>
+              </div>
 
-            <div className="animate-fade-in-up stagger-4" style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: 16,
-              marginBottom: 24,
-            }}>
-              <div style={{ flex: 1, height: 1, background: 'var(--border)' }} />
-              <span style={{
-                fontSize: 12,
-                color: 'var(--text-secondary)',
-                fontFamily: 'var(--font-body)',
-                letterSpacing: '0.05em',
-                textTransform: 'uppercase',
-              }}>Or analyze a real repo</span>
-              <div style={{ flex: 1, height: 1, background: 'var(--border)' }} />
-            </div>
+              <div className="animate-fade-in-up" style={{ animationDelay: '0.2s', marginTop: 32 }}>
+                <button className="btn-accent" onClick={handleTryDemo}>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                    <polygon points="5 3 19 12 5 21 5 3" />
+                  </svg>
+                  Try Demo Analysis
+                </button>
+              </div>
 
-            <div className="animate-fade-in-up stagger-5">
-              <RepoInput onSubmit={handleSubmit} isLoading={isLoading} />
+              <div className="animate-fade-in-up" style={{ animationDelay: '0.3s', marginTop: 40, marginBottom: 20 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+                  <div style={{ flex: 1, height: 1, background: 'var(--border)' }} />
+                  <span style={{
+                    fontSize: 12,
+                    color: 'var(--text-secondary)',
+                    fontFamily: 'var(--font-body)',
+                    letterSpacing: '0.05em',
+                    textTransform: 'uppercase',
+                    whiteSpace: 'nowrap',
+                  }}>Or analyze a real repo</span>
+                  <div style={{ flex: 1, height: 1, background: 'var(--border)' }} />
+                </div>
+              </div>
+
+              <div className="animate-fade-in-up" style={{ animationDelay: '0.4s' }}>
+                <RepoInput onSubmit={handleSubmit} isLoading={isLoading} />
+              </div>
+
+              <div className="splash-features animate-fade-in-up" style={{ animationDelay: '0.5s' }}>
+                <div className="splash-feature-card">
+                  <div style={{ fontSize: 22, marginBottom: 6, lineHeight: 1 }}>📊</div>
+                  <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-heading)', marginBottom: 2 }}>Repo Stats</div>
+                  <div style={{ fontSize: 11, color: 'var(--text-tertiary)' }}>Stars, forks, contributors</div>
+                </div>
+                <div className="splash-feature-card">
+                  <div style={{ fontSize: 22, marginBottom: 6, lineHeight: 1 }}>🏗️</div>
+                  <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-heading)', marginBottom: 2 }}>Architecture</div>
+                  <div style={{ fontSize: 11, color: 'var(--text-tertiary)' }}>Dependency graphs & structure</div>
+                </div>
+                <div className="splash-feature-card">
+                  <div style={{ fontSize: 22, marginBottom: 6, lineHeight: 1 }}>💬</div>
+                  <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-heading)', marginBottom: 2 }}>AI Chat</div>
+                  <div style={{ fontSize: 11, color: 'var(--text-tertiary)' }}>Ask questions about the code</div>
+                </div>
+              </div>
             </div>
           </div>
         )}
@@ -271,8 +284,8 @@ function App() {
             }}>
               <p style={{ fontSize: 14, fontWeight: 600, color: 'var(--error)', marginBottom: 4 }}>Analysis failed</p>
               <p style={{ fontSize: 13, color: 'var(--text-secondary)', marginBottom: 16 }}>{error}</p>
-              <button className="btn-accent" onClick={handleTryDemo} style={{ fontSize: 13, padding: '10px 20px' }}>
-                <span>🚀</span> Try Demo Instead
+               <button className="btn-accent" onClick={handleTryDemo} style={{ fontSize: 13 }}>
+                Try Demo Instead
               </button>
             </div>
           </div>
@@ -322,7 +335,7 @@ function App() {
           to { transform: rotate(360deg); }
         }
         @media (prefers-color-scheme: dark) {
-          header { background: rgba(9, 9, 11, 0.8) !important; }
+          header { background: rgba(11, 13, 20, 0.6) !important; backdrop-filter: blur(16px) !important; }
         }
         @media (max-width: 768px) {
           .analysis-layout {

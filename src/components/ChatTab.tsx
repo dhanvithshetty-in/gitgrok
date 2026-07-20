@@ -49,18 +49,15 @@ export default function ChatTab({ messages, isStreaming, onSend, onClear }: Chat
           <h3 style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-heading)' }}>Ask about this repo</h3>
         </div>
         {messages.length > 0 && (
-          <button onClick={onClear} style={{
+          <button onClick={onClear} className="chat-clear-btn" style={{
             fontSize: 12,
-            color: 'var(--text-secondary)',
+            color: 'var(--text-tertiary)',
             background: 'none',
             border: 'none',
             cursor: 'pointer',
             fontFamily: 'var(--font-body)',
             transition: 'color 0.15s',
-          }}
-            onMouseEnter={e => e.currentTarget.style.color = 'var(--text)'}
-            onMouseLeave={e => e.currentTarget.style.color = 'var(--text-secondary)'}
-          >
+          }}>
             Clear
           </button>
         )}
@@ -74,9 +71,11 @@ export default function ChatTab({ messages, isStreaming, onSend, onClear }: Chat
         {messages.length === 0 && (
           <div style={{
             textAlign: 'center',
-            paddingTop: 60,
+            paddingTop: 52,
           }}>
-            <div style={{ fontSize: 32, marginBottom: 12, opacity: 0.5 }}>💬</div>
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" style={{ color: 'var(--text-tertiary)', marginBottom: 14, opacity: 0.5 }}>
+              <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" />
+            </svg>
             <p style={{ fontSize: 14, color: 'var(--text-secondary)', marginBottom: 4 }}>Ask questions about the repository</p>
             <p style={{ fontSize: 12, color: 'var(--text-tertiary)' }}>
               e.g., "How does the architecture work?"
@@ -91,13 +90,13 @@ export default function ChatTab({ messages, isStreaming, onSend, onClear }: Chat
           }}>
             <div style={{
               maxWidth: '80%',
-              borderRadius: 10,
+              borderRadius: 12,
               padding: '10px 14px',
               fontSize: 13,
               lineHeight: 1.6,
               ...(msg.role === 'user'
                 ? { background: 'var(--accent)', color: '#fff' }
-                : { background: 'var(--code-bg)', color: 'var(--text-heading)' }
+                : { background: 'var(--code-bg)', backdropFilter: 'blur(8px)', color: 'var(--text-heading)' }
               ),
             }}>
               <div style={{ whiteSpace: 'pre-wrap' }}>{msg.content}</div>
@@ -119,7 +118,7 @@ export default function ChatTab({ messages, isStreaming, onSend, onClear }: Chat
           <div style={{ display: 'flex', justifyContent: 'flex-start', marginBottom: 12 }}>
             <div style={{
               background: 'var(--code-bg)',
-              borderRadius: 10,
+              borderRadius: 12,
               padding: '10px 14px',
               fontSize: 13,
             }}>
@@ -148,7 +147,7 @@ export default function ChatTab({ messages, isStreaming, onSend, onClear }: Chat
             type="submit"
             disabled={!input.trim() || isStreaming}
             className="btn-accent"
-            style={{ padding: '9px 16px', fontSize: 13, flexShrink: 0 }}
+            style={{ padding: '9px 16px', flexShrink: 0 }}
           >
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
               <line x1="22" y1="2" x2="11" y2="13" />
