@@ -18,7 +18,7 @@ function Chevron({ expanded }: { expanded: boolean }) {
       style={{
         color: 'var(--text-tertiary)',
         flexShrink: 0,
-        transition: 'transform 0.15s',
+        transition: 'transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1)',
         transform: expanded ? 'rotate(90deg)' : 'rotate(0deg)',
       }}
     >
@@ -35,6 +35,7 @@ function Dot({ color }: { color: string }) {
       borderRadius: '50%',
       background: color,
       flexShrink: 0,
+      boxShadow: `0 0 6px ${color}33`,
     }} />
   )
 }
@@ -66,7 +67,7 @@ function TreeNode({ node, depth }: { node: FileNode; depth: number }) {
           display: 'flex',
           alignItems: 'center',
           gap: 6,
-          padding: '5px 8px',
+          padding: '4px 8px',
           paddingLeft: `${depth * 18 + 8}px`,
           borderRadius: 6,
           border: 'none',
@@ -75,11 +76,10 @@ function TreeNode({ node, depth }: { node: FileNode; depth: number }) {
           color: 'var(--text)',
           fontSize: 13,
           fontFamily: 'var(--font-body)',
-          transition: 'background 0.12s',
         }}
       >
         <span style={{ width: 12, display: 'flex', justifyContent: 'center', flexShrink: 0 }}>
-          {hasChildren ? <Chevron expanded={expanded} /> : null}
+          {hasChildren ? <Chevron expanded={expanded} /> : <span style={{ width: 10 }} />}
         </span>
         <FileLabel name={node.name} type={node.type} />
         <span style={{
@@ -96,14 +96,15 @@ function TreeNode({ node, depth }: { node: FileNode; depth: number }) {
             color: 'var(--text-tertiary)',
             fontFamily: 'var(--font-mono)',
             flexShrink: 0,
+            opacity: 0.6,
           }}>{node.language}</span>
         )}
       </button>
       {hasChildren && (
         <div style={{
           overflow: 'hidden',
-          transition: 'max-height 0.2s ease',
-          maxHeight: expanded ? 2000 : 0,
+          transition: 'max-height 0.25s cubic-bezier(0.16, 1, 0.3, 1)',
+          maxHeight: expanded ? 5000 : 0,
         }}>
           {node.children!.map(child => (
             <TreeNode key={child.path} node={child} depth={depth + 1} />

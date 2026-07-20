@@ -14,6 +14,12 @@ interface AnalysisDashboardProps {
   onChatClear: () => void
 }
 
+const RepoIcon = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" style={{ color: 'var(--accent)' }}>
+    <path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z" />
+  </svg>
+)
+
 export default function AnalysisDashboard({
   analysis,
   messages,
@@ -24,27 +30,30 @@ export default function AnalysisDashboard({
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
       <div className="animate-fade-in-up stagger-1">
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 20 }}>
+        <div className="surface" style={{ padding: '18px 20px', display: 'flex', alignItems: 'center', gap: 12 }}>
           <div style={{
-            width: 36,
-            height: 36,
-            borderRadius: 10,
+            width: 40,
+            height: 40,
+            borderRadius: 12,
             background: 'var(--accent-soft)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            fontSize: 16,
+            flexShrink: 0,
           }}>
-            {analysis.repoUrl.includes('facebook/react') ? '⚛️' : '📦'}
+            <RepoIcon />
           </div>
-          <div>
+          <div style={{ flex: 1, minWidth: 0 }}>
             <h2 style={{
               fontFamily: 'var(--font-heading)',
-              fontSize: 18,
+              fontSize: 16,
               fontWeight: 700,
               color: 'var(--text-heading)',
               letterSpacing: '-0.02em',
               lineHeight: 1.2,
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              whiteSpace: 'nowrap',
             }}>
               {analysis.repoUrl.replace('https://github.com/', '')}
             </h2>
@@ -56,6 +65,16 @@ export default function AnalysisDashboard({
               Analyzed {new Date(analysis.analyzedAt).toLocaleString()} · branch "{analysis.branch}"
             </p>
           </div>
+          <span style={{
+            fontSize: 10,
+            fontFamily: 'var(--font-mono)',
+            color: 'var(--success)',
+            background: 'rgba(5, 150, 105, 0.08)',
+            padding: '3px 8px',
+            borderRadius: 6,
+            border: '1px solid rgba(5, 150, 105, 0.15)',
+            flexShrink: 0,
+          }}>Analyzed</span>
         </div>
       </div>
 

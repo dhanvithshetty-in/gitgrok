@@ -8,6 +8,39 @@ interface ChatTabProps {
   onClear: () => void
 }
 
+const ChatBubbleIcon = () => (
+  <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" style={{ color: 'var(--text-tertiary)', opacity: 0.5 }}>
+    <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" />
+  </svg>
+)
+
+const SendIcon = () => (
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+    <line x1="22" y1="2" x2="11" y2="13" />
+    <polygon points="22 2 15 22 11 13 2 9 22 2" />
+  </svg>
+)
+
+function TypingIndicator() {
+  return (
+    <div style={{ display: 'flex', justifyContent: 'flex-start', marginBottom: 12 }}>
+      <div style={{
+        background: 'var(--code-bg)',
+        borderRadius: '14px 14px 14px 4px',
+        padding: '12px 16px',
+        border: '1px solid var(--border-subtle)',
+        display: 'flex',
+        gap: 4,
+        alignItems: 'center',
+      }}>
+        <span className="typing-dot" />
+        <span className="typing-dot" />
+        <span className="typing-dot" />
+      </div>
+    </div>
+  )
+}
+
 export default function ChatTab({ messages, isStreaming, onSend, onClear }: ChatTabProps) {
   const [input, setInput] = useState('')
   const bottomRef = useRef<HTMLDivElement>(null)
@@ -29,7 +62,7 @@ export default function ChatTab({ messages, isStreaming, onSend, onClear }: Chat
     <div className="surface-elevated animate-fade-in-up stagger-6" style={{
       display: 'flex',
       flexDirection: 'column',
-      height: 420,
+      height: 440,
       overflow: 'hidden',
     }}>
       <div style={{
@@ -49,15 +82,7 @@ export default function ChatTab({ messages, isStreaming, onSend, onClear }: Chat
           <h3 style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-heading)' }}>Ask about this repo</h3>
         </div>
         {messages.length > 0 && (
-          <button onClick={onClear} className="chat-clear-btn" style={{
-            fontSize: 12,
-            color: 'var(--text-tertiary)',
-            background: 'none',
-            border: 'none',
-            cursor: 'pointer',
-            fontFamily: 'var(--font-body)',
-            transition: 'color 0.15s',
-          }}>
+          <button onClick={onClear} className="chat-clear-btn">
             Clear
           </button>
         )}
@@ -69,13 +94,8 @@ export default function ChatTab({ messages, isStreaming, onSend, onClear }: Chat
         padding: 16,
       }}>
         {messages.length === 0 && (
-          <div style={{
-            textAlign: 'center',
-            paddingTop: 52,
-          }}>
-            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" style={{ color: 'var(--text-tertiary)', marginBottom: 14, opacity: 0.5 }}>
-              <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" />
-            </svg>
+          <div style={{ textAlign: 'center', paddingTop: 48 }}>
+            <ChatBubbleIcon />
             <p style={{ fontSize: 14, color: 'var(--text-secondary)', marginBottom: 4 }}>Ask questions about the repository</p>
             <p style={{ fontSize: 12, color: 'var(--text-tertiary)' }}>
               e.g., "How does the architecture work?"
@@ -90,13 +110,12 @@ export default function ChatTab({ messages, isStreaming, onSend, onClear }: Chat
           }}>
             <div style={{
               maxWidth: '80%',
-              borderRadius: 12,
               padding: '10px 14px',
               fontSize: 13,
               lineHeight: 1.6,
               ...(msg.role === 'user'
-                ? { background: 'var(--accent)', color: '#fff' }
-                : { background: 'var(--code-bg)', backdropFilter: 'blur(8px)', color: 'var(--text-heading)' }
+                ? { background: 'var(--accent)', color: '#fff', borderRadius: '14px 14px 4px 14px' }
+                : { background: 'var(--code-bg)', backdropFilter: 'blur(8px)', color: 'var(--text-heading)', borderRadius: '14px 14px 14px 4px', border: '1px solid var(--border-subtle)' }
               ),
             }}>
               <div style={{ whiteSpace: 'pre-wrap' }}>{msg.content}</div>
@@ -108,24 +127,13 @@ export default function ChatTab({ messages, isStreaming, onSend, onClear }: Chat
                   fontFamily: 'var(--font-mono)',
                   ...(msg.role === 'user' ? { color: 'rgba(255,255,255,0.6)' } : { color: 'var(--text-secondary)' }),
                 }}>
-                  {new Date(msg.timestamp).toLocaleTimeString()}
+                  {new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                 </div>
               )}
             </div>
           </div>
         ))}
-        {isStreaming && (
-          <div style={{ display: 'flex', justifyContent: 'flex-start', marginBottom: 12 }}>
-            <div style={{
-              background: 'var(--code-bg)',
-              borderRadius: 12,
-              padding: '10px 14px',
-              fontSize: 13,
-            }}>
-              <span className="animate-pulse-soft" style={{ color: 'var(--text-heading)' }}>▊</span>
-            </div>
-          </div>
-        )}
+        {isStreaming && <TypingIndicator />}
         <div ref={bottomRef} />
       </div>
 
@@ -141,7 +149,7 @@ export default function ChatTab({ messages, isStreaming, onSend, onClear }: Chat
             placeholder="Ask a question..."
             disabled={isStreaming}
             className="input-field"
-            style={{ padding: '9px 12px', fontSize: 13 }}
+            style={{ padding: '9px 12px', fontSize: 13, borderRadius: 10 }}
           />
           <button
             type="submit"
@@ -149,10 +157,7 @@ export default function ChatTab({ messages, isStreaming, onSend, onClear }: Chat
             className="btn-accent"
             style={{ padding: '9px 16px', flexShrink: 0 }}
           >
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-              <line x1="22" y1="2" x2="11" y2="13" />
-              <polygon points="22 2 15 22 11 13 2 9 22 2" />
-            </svg>
+            <SendIcon />
           </button>
         </div>
       </form>

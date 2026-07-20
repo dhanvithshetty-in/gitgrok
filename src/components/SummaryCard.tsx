@@ -7,7 +7,7 @@ interface SummaryCardProps {
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <div style={{ marginBottom: 20 }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
         <div style={{
           width: 3,
           height: 16,
@@ -15,7 +15,7 @@ function Section({ title, children }: { title: string; children: React.ReactNode
           background: 'var(--accent)',
           flexShrink: 0,
         }} />
-        <h3 className="section-label" style={{ fontSize: 11 }}>{title}</h3>
+        <h3 className="section-label">{title}</h3>
       </div>
       {children}
     </div>
@@ -26,15 +26,15 @@ export default function SummaryCard({ summary }: SummaryCardProps) {
   return (
     <div className="surface-elevated animate-fade-in-up stagger-2" style={{ padding: 24 }}>
       <Section title="Purpose">
-        <p style={{ fontSize: 14, color: 'var(--text)', lineHeight: 1.7 }}>{summary.purpose}</p>
+        <p style={{ fontSize: 14, color: 'var(--text)', lineHeight: 1.75 }}>{summary.purpose}</p>
       </Section>
 
       <Section title="Architecture">
-        <p style={{ fontSize: 14, color: 'var(--text)', lineHeight: 1.7 }}>{summary.architecture}</p>
+        <p style={{ fontSize: 14, color: 'var(--text)', lineHeight: 1.75 }}>{summary.architecture}</p>
       </Section>
 
       <Section title="Code Quality">
-        <p style={{ fontSize: 14, color: 'var(--text)', lineHeight: 1.7 }}>{summary.quality}</p>
+        <p style={{ fontSize: 14, color: 'var(--text)', lineHeight: 1.75 }}>{summary.quality}</p>
       </Section>
 
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24 }}>
@@ -53,8 +53,8 @@ export default function SummaryCard({ summary }: SummaryCardProps) {
                 <span style={{
                   color: 'var(--success)',
                   fontWeight: 700,
-                  fontSize: 12,
-                  marginTop: 2,
+                  fontSize: 13,
+                  marginTop: 1,
                 }}>+</span>
                 {s}
               </li>
@@ -76,8 +76,8 @@ export default function SummaryCard({ summary }: SummaryCardProps) {
                 <span style={{
                   color: 'var(--warning)',
                   fontWeight: 700,
-                  fontSize: 12,
-                  marginTop: 2,
+                  fontSize: 13,
+                  marginTop: 1,
                 }}>→</span>
                 {r}
               </li>

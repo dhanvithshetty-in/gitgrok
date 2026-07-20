@@ -33,7 +33,7 @@ export default function MermaidRenderer({ diagram }: MermaidRendererProps) {
 
   if (error) {
     return (
-      <div className="surface-elevated animate-fade-in-up stagger-4" style={{
+      <div className="surface-elevated" style={{
         padding: 20,
         borderColor: 'rgba(239, 68, 68, 0.15)',
       }}>
@@ -49,7 +49,7 @@ export default function MermaidRenderer({ diagram }: MermaidRendererProps) {
   }
 
   return (
-    <div className="surface-elevated animate-fade-in-up stagger-5" style={{ padding: 20, overflowX: 'auto' }}>
+    <div className="surface-elevated" style={{ padding: 24, overflowX: 'auto' }}>
       <div ref={containerRef} style={{
         display: 'flex',
         justifyContent: 'center',

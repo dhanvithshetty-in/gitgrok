@@ -27,6 +27,65 @@ function loadHistory(): HistoryItem[] {
   }
 }
 
+const MagnifyingGlassIcon = () => (
+  <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
+    <circle cx="11" cy="11" r="8" />
+    <line x1="21" y1="21" x2="16.65" y2="16.65" />
+  </svg>
+)
+
+const LogoIcon = () => (
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" style={{ color: 'currentColor' }}>
+    <circle cx="11" cy="11" r="8" />
+    <line x1="21" y1="21" x2="16.65" y2="16.65" />
+  </svg>
+)
+
+const PlayIcon = () => (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+    <polygon points="5 3 19 12 5 21 5 3" />
+  </svg>
+)
+
+const PlusIcon = () => (
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+    <line x1="12" y1="5" x2="12" y2="19" />
+    <line x1="5" y1="12" x2="19" y2="12" />
+  </svg>
+)
+
+const RepoIcon = () => (
+  <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" style={{ color: 'currentColor' }}>
+    <circle cx="11" cy="11" r="8" />
+    <line x1="21" y1="21" x2="16.65" y2="16.65" />
+    <path d="M11 6v10" strokeWidth="2" />
+    <path d="M6 11h10" strokeWidth="2" />
+  </svg>
+)
+
+const StatsIcon = () => (
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
+    <line x1="18" y1="20" x2="18" y2="10" />
+    <line x1="12" y1="20" x2="12" y2="4" />
+    <line x1="6" y1="20" x2="6" y2="14" />
+  </svg>
+)
+
+const ArchitectureIcon = () => (
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
+    <rect x="3" y="3" width="7" height="7" />
+    <rect x="14" y="3" width="7" height="7" />
+    <rect x="14" y="14" width="7" height="7" />
+    <rect x="3" y="14" width="7" height="7" />
+  </svg>
+)
+
+const ChatIcon = () => (
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
+    <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" />
+  </svg>
+)
+
 function App() {
   const { analysis: liveAnalysis, isLoading: liveLoading, error, submitAnalysis, reset } = useAnalysis()
   const { messages, isStreaming, sendMessage, clearMessages } = useChat()
@@ -47,8 +106,8 @@ function App() {
   }, [])
 
   useEffect(() => {
-    if (analysis) window.scrollTo({ top: 0 })
-  }, [!!analysis])
+    if (analysis) window.scrollTo({ top: 0, behavior: 'smooth' })
+  }, [analysis ? analysis.id : null])
 
   const handleSubmit = useCallback(async (url: string, branch: string) => {
     if (url === demoAnalysis?.repoUrl) {
@@ -104,16 +163,26 @@ function App() {
       }}>
         <div style={{ textAlign: 'center' }}>
           <div style={{
-            fontSize: 32,
-            marginBottom: 12,
+            width: 56,
+            height: 56,
+            borderRadius: 18,
+            background: 'linear-gradient(135deg, var(--accent) 0%, color-mix(in srgb, var(--accent) 60%, #fff 40%) 100%)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            margin: '0 auto 16px',
+            color: '#fff',
             animation: 'pulse 2s ease-in-out infinite',
-          }}>🔍</div>
+          }}>
+            <MagnifyingGlassIcon />
+          </div>
           <h1 style={{
             fontFamily: 'var(--font-heading)',
             fontSize: 20,
-            fontWeight: 600,
+            fontWeight: 700,
             color: 'var(--text-heading)',
             marginBottom: 4,
+            letterSpacing: '-0.03em',
           }}>GitGrok</h1>
           <p style={{ fontSize: 13, color: 'var(--text-secondary)' }}>Loading...</p>
         </div>
@@ -122,30 +191,27 @@ function App() {
   }
 
   return (
-    <div className="min-h-screen" style={{ background: 'var(--bg)' }}>
-      <header style={{
-        borderBottom: '1px solid var(--border)',
-        background: 'var(--glass-bg)',
-        position: 'sticky',
-        top: 0,
-        zIndex: 50,
-        backdropFilter: 'blur(16px)',
-        WebkitBackdropFilter: 'blur(16px)',
-      }}>
-        <div style={{
-          maxWidth: 1200,
-          margin: '0 auto',
-          padding: '14px 24px',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-        }}>
+    <div style={{ minHeight: '100svh', display: 'flex', flexDirection: 'column', background: 'var(--bg)' }}>
+      <header className="app-header">
+        <div className="app-header-inner">
           <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-            <span style={{ fontSize: 22 }}>🔍</span>
+            <div style={{
+              width: 34,
+              height: 34,
+              borderRadius: 10,
+              background: 'linear-gradient(135deg, var(--accent) 0%, color-mix(in srgb, var(--accent) 60%, #fff 40%) 100%)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              color: '#fff',
+              flexShrink: 0,
+            }}>
+              <LogoIcon />
+            </div>
             <div>
               <h1 style={{
                 fontFamily: 'var(--font-heading)',
-                fontSize: 17,
+                fontSize: 16,
                 fontWeight: 700,
                 letterSpacing: '-0.03em',
                 color: 'var(--text-heading)',
@@ -154,23 +220,20 @@ function App() {
               <p style={{
                 fontSize: 11,
                 color: 'var(--text-secondary)',
-                fontFamily: 'var(--font-body)',
                 letterSpacing: '0.02em',
               }}>GitHub Repository Analyzer</p>
             </div>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             {!analysis && !isLoading && (
-              <button className="btn-accent" onClick={handleTryDemo} style={{ padding: '9px 18px', fontSize: 13 }}>
+              <button className="btn-accent" onClick={handleTryDemo} style={{ padding: '8px 16px', fontSize: 13 }}>
+                <PlayIcon />
                 Try Demo
               </button>
             )}
             {analysis && (
               <button className="btn-ghost" onClick={handleNewAnalysis}>
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-                  <line x1="12" y1="5" x2="12" y2="19" />
-                  <line x1="5" y1="12" x2="19" y2="12" />
-                </svg>
+                <PlusIcon />
                 New Analysis
               </button>
             )}
@@ -178,7 +241,7 @@ function App() {
         </div>
       </header>
 
-      <main style={{ maxWidth: 1200, margin: '0 auto', padding: '32px 24px' }}>
+      <main className="content-container">
         {!analysis && !isLoading && !error && (
           <div className="splash-hero animate-fade-in">
             <div className="splash-blob splash-blob-1" />
@@ -188,18 +251,9 @@ function App() {
             <div style={{ position: 'relative', zIndex: 1, maxWidth: 600, margin: '0 auto', textAlign: 'center' }}>
               <div className="animate-fade-in-up">
                 <div className="splash-icon">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
-                    <circle cx="11" cy="11" r="8" />
-                    <line x1="21" y1="21" x2="16.65" y2="16.65" />
-                    <path d="M11 8v6" strokeWidth="2" />
-                    <path d="M8 11h6" strokeWidth="2" />
-                  </svg>
+                  <RepoIcon />
                 </div>
-                <h2 className="splash-heading" style={{
-                  fontFamily: 'var(--font-heading)',
-                  fontWeight: 700,
-                  color: 'var(--text-heading)',
-                }}>
+                <h2 className="splash-heading" style={{ color: 'var(--text-heading)' }}>
                   Understand any<br />GitHub repository
                 </h2>
                 <p style={{
@@ -215,10 +269,8 @@ function App() {
               </div>
 
               <div className="animate-fade-in-up" style={{ animationDelay: '0.2s', marginTop: 32 }}>
-                <button className="btn-accent" onClick={handleTryDemo}>
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-                    <polygon points="5 3 19 12 5 21 5 3" />
-                  </svg>
+                <button className="btn-accent" onClick={handleTryDemo} style={{ padding: '14px 32px', fontSize: 15, gap: 10 }}>
+                  <PlayIcon />
                   Try Demo Analysis
                 </button>
               </div>
@@ -229,7 +281,6 @@ function App() {
                   <span style={{
                     fontSize: 12,
                     color: 'var(--text-secondary)',
-                    fontFamily: 'var(--font-body)',
                     letterSpacing: '0.05em',
                     textTransform: 'uppercase',
                     whiteSpace: 'nowrap',
@@ -244,19 +295,19 @@ function App() {
 
               <div className="splash-features animate-fade-in-up" style={{ animationDelay: '0.5s' }}>
                 <div className="splash-feature-card">
-                  <div style={{ fontSize: 22, marginBottom: 6, lineHeight: 1 }}>📊</div>
-                  <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-heading)', marginBottom: 2 }}>Repo Stats</div>
-                  <div style={{ fontSize: 11, color: 'var(--text-tertiary)' }}>Stars, forks, contributors</div>
+                  <div className="feature-icon"><StatsIcon /></div>
+                  <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-heading)', marginBottom: 3 }}>Repo Stats</div>
+                  <div style={{ fontSize: 12, color: 'var(--text-tertiary)' }}>Stars, forks, contributors</div>
                 </div>
                 <div className="splash-feature-card">
-                  <div style={{ fontSize: 22, marginBottom: 6, lineHeight: 1 }}>🏗️</div>
-                  <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-heading)', marginBottom: 2 }}>Architecture</div>
-                  <div style={{ fontSize: 11, color: 'var(--text-tertiary)' }}>Dependency graphs & structure</div>
+                  <div className="feature-icon"><ArchitectureIcon /></div>
+                  <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-heading)', marginBottom: 3 }}>Architecture</div>
+                  <div style={{ fontSize: 12, color: 'var(--text-tertiary)' }}>Dependency graphs & structure</div>
                 </div>
                 <div className="splash-feature-card">
-                  <div style={{ fontSize: 22, marginBottom: 6, lineHeight: 1 }}>💬</div>
-                  <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-heading)', marginBottom: 2 }}>AI Chat</div>
-                  <div style={{ fontSize: 11, color: 'var(--text-tertiary)' }}>Ask questions about the code</div>
+                  <div className="feature-icon"><ChatIcon /></div>
+                  <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-heading)', marginBottom: 3 }}>AI Chat</div>
+                  <div style={{ fontSize: 12, color: 'var(--text-tertiary)' }}>Ask questions about the code</div>
                 </div>
               </div>
             </div>
@@ -284,7 +335,7 @@ function App() {
             }}>
               <p style={{ fontSize: 14, fontWeight: 600, color: 'var(--error)', marginBottom: 4 }}>Analysis failed</p>
               <p style={{ fontSize: 13, color: 'var(--text-secondary)', marginBottom: 16 }}>{error}</p>
-               <button className="btn-accent" onClick={handleTryDemo} style={{ fontSize: 13 }}>
+              <button className="btn-accent" onClick={handleTryDemo} style={{ fontSize: 13 }}>
                 Try Demo Instead
               </button>
             </div>
@@ -325,27 +376,10 @@ function App() {
         padding: '20px 24px',
         textAlign: 'center',
         fontSize: 12,
-        color: 'var(--text-secondary)',
+        color: 'var(--text-tertiary)',
       }}>
         GitGrok — React + TypeScript + Tailwind CSS + n8n
       </footer>
-
-      <style>{`
-        @keyframes spin {
-          to { transform: rotate(360deg); }
-        }
-        @media (prefers-color-scheme: dark) {
-          header { background: rgba(11, 13, 20, 0.6) !important; backdrop-filter: blur(16px) !important; }
-        }
-        @media (max-width: 768px) {
-          .analysis-layout {
-            grid-template-columns: 1fr !important;
-          }
-          .sidebar-sticky {
-            position: static !important;
-          }
-        }
-      `}</style>
     </div>
   )
 }

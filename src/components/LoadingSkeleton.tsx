@@ -1,31 +1,24 @@
-function Pulse({ style, className }: { style?: React.CSSProperties; className?: string }) {
+function Pulse({ style }: { style?: React.CSSProperties }) {
   return (
     <div
-      className={className}
-      style={{
-        background: 'var(--bg-tertiary)',
-        borderRadius: 6,
-        animation: 'shimmer 1.5s ease-in-out infinite',
-        backgroundImage: 'linear-gradient(90deg, var(--bg-tertiary) 0%, var(--bg-secondary) 40%, var(--bg-tertiary) 80%)',
-        backgroundSize: '200% 100%',
-        ...style,
-      }}
+      className="skeleton-shimmer"
+      style={style}
     />
   )
 }
 
 function StatBox() {
   return (
-    <div className="surface" style={{ padding: '16px 12px', textAlign: 'center', borderColor: 'transparent' }}>
-      <Pulse style={{ width: 24, height: 24, borderRadius: 12, margin: '0 auto 10px' }} />
-      <Pulse style={{ width: '60%', height: 18, margin: '0 auto 6px' }} />
-      <Pulse style={{ width: '40%', height: 10, margin: '0 auto' }} />
+    <div className="surface" style={{ padding: '16px 14px', textAlign: 'center', borderColor: 'transparent' }}>
+      <Pulse style={{ width: 20, height: 20, borderRadius: 10, margin: '0 auto 10px' }} />
+      <Pulse style={{ width: '50%', height: 20, margin: '0 auto 6px', borderRadius: 4 }} />
+      <Pulse style={{ width: '35%', height: 10, margin: '0 auto', borderRadius: 3 }} />
     </div>
   )
 }
 
 function TextLine({ width = '100%' }: { width?: string }) {
-  return <Pulse style={{ width, height: 12, marginBottom: 8 }} />
+  return <Pulse style={{ width, height: 12, marginBottom: 8, borderRadius: 4 }} />
 }
 
 function SectionBlock() {
@@ -44,9 +37,9 @@ function SectionBlock() {
 
 function TreeLine({ depth = 0 }: { depth?: number }) {
   return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '5px 8px', paddingLeft: `${depth * 18 + 8}px` }}>
+    <div style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '4px 8px', paddingLeft: `${depth * 18 + 8}px` }}>
       <Pulse style={{ width: 12, height: 12, borderRadius: 3, flexShrink: 0 }} />
-      <Pulse style={{ width: `${50 + Math.random() * 30}%`, height: 11 }} />
+      <Pulse style={{ width: `${50 + Math.random() * 30}%`, height: 11, borderRadius: 3 }} />
     </div>
   )
 }
@@ -54,27 +47,28 @@ function TreeLine({ depth = 0 }: { depth?: number }) {
 export default function LoadingSkeleton() {
   return (
     <div className="animate-fade-in" style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 4 }}>
-        <Pulse style={{ width: 36, height: 36, borderRadius: 10 }} />
-        <div>
-          <Pulse style={{ width: 200, height: 16, marginBottom: 6 }} />
-          <Pulse style={{ width: 140, height: 11 }} />
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+        <Pulse style={{ width: 40, height: 40, borderRadius: 12 }} />
+        <div style={{ flex: 1 }}>
+          <Pulse style={{ width: '40%', height: 16, marginBottom: 6, borderRadius: 4 }} />
+          <Pulse style={{ width: '25%', height: 11, borderRadius: 3 }} />
         </div>
+        <Pulse style={{ width: 60, height: 20, borderRadius: 6 }} />
       </div>
 
-      <div className="animate-fade-in-up stagger-1" style={{
+      <div style={{
         display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fit, minmax(100px, 1fr))',
+        gridTemplateColumns: 'repeat(auto-fit, minmax(110px, 1fr))',
         gap: 8,
       }}>
         {Array.from({ length: 6 }).map((_, i) => (
-          <div key={i} className="animate-fade-in-up" style={{ animationDelay: `${i * 0.04}s` }}>
+          <div key={i} className="animate-fade-in" style={{ animationDelay: `${i * 0.04}s` }}>
             <StatBox />
           </div>
         ))}
       </div>
 
-      <div className="surface-elevated animate-fade-in-up stagger-2" style={{ padding: 24, borderColor: 'transparent' }}>
+      <div className="surface-elevated" style={{ padding: 24, borderColor: 'transparent' }}>
         <SectionBlock />
         <SectionBlock />
         <SectionBlock />
@@ -103,7 +97,7 @@ export default function LoadingSkeleton() {
           <Pulse style={{ width: 3, height: 16, borderRadius: 2 }} />
           <Pulse style={{ width: 80, height: 11 }} />
         </div>
-        <div className="animate-fade-in-up stagger-3" style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
           {Array.from({ length: 5 }).map((_, i) => (
             <Pulse key={i} style={{ width: `${70 + i * 15}px`, height: 24, borderRadius: 6 }} />
           ))}
@@ -111,7 +105,7 @@ export default function LoadingSkeleton() {
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
-        <div className="surface-elevated animate-fade-in-up stagger-4" style={{ padding: 6, borderColor: 'transparent' }}>
+        <div className="surface-elevated" style={{ padding: 6, borderColor: 'transparent' }}>
           <div style={{ padding: '14px 16px', borderBottom: '1px solid var(--border)' }}>
             <Pulse style={{ width: 120, height: 13 }} />
           </div>
@@ -120,7 +114,7 @@ export default function LoadingSkeleton() {
           ))}
         </div>
 
-        <div className="surface-elevated animate-fade-in-up stagger-5" style={{ height: 400, display: 'flex', flexDirection: 'column', borderColor: 'transparent' }}>
+        <div className="surface-elevated" style={{ height: 400, display: 'flex', flexDirection: 'column', borderColor: 'transparent' }}>
           <div style={{ padding: '14px 16px', borderBottom: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between' }}>
             <Pulse style={{ width: 120, height: 13 }} />
             <Pulse style={{ width: 40, height: 13 }} />
