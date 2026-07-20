@@ -15,7 +15,7 @@ export default function TechStackBadge({ items }: TechStackBadgeProps) {
           className={`tech-badge badge-${item.category}`}
         >
           <span style={{ fontWeight: 600 }}>{item.name}</span>
-          <span style={{ opacity: 0.5, fontFamily: 'var(--font-mono)', fontSize: 11 }}>{item.percentage}%</span>
+          <span style={{ opacity: 0.7, fontFamily: 'var(--font-mono)', fontSize: 11 }}>{item.percentage}%</span>
         </span>
       ))}
     </div>

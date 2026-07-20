@@ -111,8 +111,8 @@ export default function ChatTab({ messages, isStreaming, onSend, onClear }: Chat
             <div style={{
               maxWidth: '80%',
               padding: '10px 14px',
-              fontSize: 13,
-              lineHeight: 1.6,
+              fontSize: 14,
+              lineHeight: 1.65,
               ...(msg.role === 'user'
                 ? { background: 'var(--accent)', color: '#fff', borderRadius: '14px 14px 4px 14px' }
                 : { background: 'var(--code-bg)', backdropFilter: 'blur(8px)', color: 'var(--text-heading)', borderRadius: '14px 14px 14px 4px', border: '1px solid var(--border-subtle)' }
@@ -121,9 +121,9 @@ export default function ChatTab({ messages, isStreaming, onSend, onClear }: Chat
               <div style={{ whiteSpace: 'pre-wrap' }}>{msg.content}</div>
               {msg.timestamp && (
                 <div style={{
-                  fontSize: 10,
+                  fontSize: 11,
                   marginTop: 6,
-                  opacity: 0.5,
+                  opacity: 0.6,
                   fontFamily: 'var(--font-mono)',
                   ...(msg.role === 'user' ? { color: 'rgba(255,255,255,0.6)' } : { color: 'var(--text-secondary)' }),
                 }}>

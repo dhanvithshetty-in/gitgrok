@@ -74,7 +74,7 @@ function TreeNode({ node, depth }: { node: FileNode; depth: number }) {
           background: 'transparent',
           cursor: hasChildren ? 'pointer' : 'default',
           color: 'var(--text)',
-          fontSize: 13,
+          fontSize: 14,
           fontFamily: 'var(--font-body)',
         }}
       >
@@ -92,11 +92,10 @@ function TreeNode({ node, depth }: { node: FileNode; depth: number }) {
         {node.type === 'file' && node.language && (
           <span style={{
             marginLeft: 'auto',
-            fontSize: 10,
+            fontSize: 11,
             color: 'var(--text-tertiary)',
             fontFamily: 'var(--font-mono)',
             flexShrink: 0,
-            opacity: 0.6,
           }}>{node.language}</span>
         )}
       </button>

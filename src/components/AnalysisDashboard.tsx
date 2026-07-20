@@ -5,6 +5,7 @@ import FileTree from './FileTree'
 import MermaidRenderer from './MermaidRenderer'
 import StatsGrid from './StatsGrid'
 import ChatTab from './ChatTab'
+import CodeHealthGauge from './CodeHealthGauge'
 
 interface AnalysisDashboardProps {
   analysis: RepoAnalysis
@@ -66,19 +67,21 @@ export default function AnalysisDashboard({
             </p>
           </div>
           <span style={{
-            fontSize: 10,
+            fontSize: 11,
             fontFamily: 'var(--font-mono)',
             color: 'var(--success)',
-            background: 'rgba(5, 150, 105, 0.08)',
-            padding: '3px 8px',
-            borderRadius: 6,
-            border: '1px solid rgba(5, 150, 105, 0.15)',
+            background: 'rgba(22, 163, 74, 0.08)',
+            border: '1px solid rgba(22, 163, 74, 0.15)',
             flexShrink: 0,
           }}>Analyzed</span>
         </div>
       </div>
 
       <StatsGrid stats={analysis.stats} />
+
+      <div className="animate-fade-in-up stagger-2">
+        <CodeHealthGauge summary={analysis.summary} />
+      </div>
 
       <SummaryCard summary={analysis.summary} />
 

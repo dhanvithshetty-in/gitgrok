@@ -25,8 +25,8 @@ export default function HistorySidebar({ items, onSelect, onDelete, activeId }: 
     return (
       <div className="surface" style={{ padding: 24, textAlign: 'center' }}>
         <ClockIcon />
-        <p style={{ fontSize: 13, color: 'var(--text-secondary)', marginTop: 10 }}>No analyses yet</p>
-        <p style={{ fontSize: 11, color: 'var(--text-tertiary)', marginTop: 4 }}>
+        <p style={{ fontSize: 14, color: 'var(--text-secondary)', marginTop: 10 }}>No analyses yet</p>
+        <p style={{ fontSize: 12, color: 'var(--text-tertiary)', marginTop: 4 }}>
           Results appear here
         </p>
       </div>
@@ -46,11 +46,11 @@ export default function HistorySidebar({ items, onSelect, onDelete, activeId }: 
         <h3 style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-heading)' }}>History</h3>
         <span style={{
           marginLeft: 'auto',
-          fontSize: 10,
+          fontSize: 11,
           fontFamily: 'var(--font-mono)',
           color: 'var(--text-tertiary)',
           background: 'var(--bg-tertiary)',
-          padding: '1px 6px',
+          padding: '2px 7px',
           borderRadius: 4,
         }}>{items.length}</span>
       </div>
@@ -71,7 +71,7 @@ export default function HistorySidebar({ items, onSelect, onDelete, activeId }: 
             <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8 }}>
               <div style={{ flex: 1, minWidth: 0 }}>
                 <p style={{
-                  fontSize: 13,
+                  fontSize: 14,
                   fontWeight: 500,
                   color: 'var(--text-heading)',
                   overflow: 'hidden',
@@ -90,7 +90,7 @@ export default function HistorySidebar({ items, onSelect, onDelete, activeId }: 
                   marginBottom: 2,
                 }}>{item.summary}</p>
                 <p style={{
-                  fontSize: 10,
+                  fontSize: 11,
                   color: 'var(--text-tertiary)',
                   fontFamily: 'var(--font-mono)',
                 }}>

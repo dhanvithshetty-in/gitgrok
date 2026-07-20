@@ -61,7 +61,7 @@ export default function StatsGrid({ stats }: StatsGridProps) {
             {item.value}
           </div>
           <div style={{
-            fontSize: 10,
+            fontSize: 11,
             color: 'var(--text-tertiary)',
             fontFamily: 'var(--font-heading)',
             fontWeight: 600,
