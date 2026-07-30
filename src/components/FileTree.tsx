@@ -115,6 +115,11 @@ function TreeNode({ node, depth }: { node: FileNode; depth: number }) {
 }
 
 export default function FileTree({ nodes }: FileTreeProps) {
+  // Convert flat string[] into FileNode[] if needed
+  const fileNodes: FileNode[] = Array.isArray(nodes) && nodes.length > 0 && typeof nodes[0] === 'string'
+    ? (nodes as string[]).map(p => ({ name: p.split('/').pop() || p, path: p, type: 'file' as const }))
+    : (nodes as FileNode[])
+
   return (
     <div className="surface-elevated animate-fade-in-up stagger-4" style={{ overflow: 'hidden' }}>
       <div style={{
@@ -133,7 +138,7 @@ export default function FileTree({ nodes }: FileTreeProps) {
         <h3 style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-heading)' }}>Repository Files</h3>
       </div>
       <div style={{ padding: 6, maxHeight: 420, overflowY: 'auto' }}>
-        {nodes.map(node => (
+        {fileNodes.map(node => (
           <TreeNode key={node.path} node={node} depth={0} />
         ))}
       </div>
