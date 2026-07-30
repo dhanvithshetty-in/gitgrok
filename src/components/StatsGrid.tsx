@@ -21,7 +21,7 @@ export default function StatsGrid({ stats }: StatsGridProps) {
     { label: 'Open Issues', value: stats.openIssues.toLocaleString() },
     { label: 'License', value: stats.license },
     { label: 'Contributors', value: stats.contributors.toLocaleString() },
-    { label: 'Last Commit', value: stats.lastCommit.slice(0, 10) },
+    { label: 'Last Commit', value: (stats.lastCommit || '').slice(0, 10) },
   ]
 
   return (

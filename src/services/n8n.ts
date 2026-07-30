@@ -31,7 +31,10 @@ export async function triggerAnalysis(req: AnalysisRequest): Promise<RepoAnalysi
     body: JSON.stringify(req),
   })
   if (!res.ok) throw new Error(`Analysis failed: ${res.statusText}`)
-  return res.json()
+  const data = await res.json()
+  // n8n wraps items in { json: {...} } format when respondWith is "allIncomingItems"
+  const unwrapped = Array.isArray(data) ? (data[0]?.json || data[0]) : data
+  return unwrapped as RepoAnalysis
 }
 
 export async function sendChatMessage(req: ChatRequest): Promise<ChatMessage> {

@@ -56,14 +56,14 @@ export default function AnalysisDashboard({
               textOverflow: 'ellipsis',
               whiteSpace: 'nowrap',
             }}>
-              {analysis.repoUrl.replace('https://github.com/', '')}
+              {(analysis.repoUrl || '').replace('https://github.com/', '')}
             </h2>
             <p style={{
               fontSize: 12,
               color: 'var(--text-secondary)',
               fontFamily: 'var(--font-mono)',
             }}>
-              Analyzed {new Date(analysis.analyzedAt).toLocaleString()} · branch "{analysis.branch}"
+              Analyzed {analysis.analyzedAt ? new Date(analysis.analyzedAt).toLocaleString() : 'N/A'} · branch "{analysis.branch}"
             </p>
           </div>
           <span style={{

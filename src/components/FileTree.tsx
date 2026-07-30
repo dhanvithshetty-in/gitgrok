@@ -41,7 +41,7 @@ function Dot({ color }: { color: string }) {
 }
 
 function FileLabel({ name, type }: { name: string; type: string }) {
-  const ext = name.split('.').pop()?.toLowerCase()
+  const ext = (name || '').split('.').pop()?.toLowerCase()
   const dot: Record<string, string> = {
     ts: '#3178C6', tsx: '#3178C6', js: '#F7DF1E', jsx: '#61DAFB',
     py: '#3776AB', rs: '#DEA584', go: '#00ADD8', java: '#B07219',
