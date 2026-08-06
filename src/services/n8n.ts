@@ -50,9 +50,27 @@ export async function sendChatMessage(req: ChatRequest): Promise<ChatMessage> {
   })
   if (!res.ok) throw new Error(`Chat failed: ${res.statusText}`)
   const data = await res.json()
+  const unwrapped = Array.isArray(data) ? (data[0]?.json || data[0]) : data
+  let content = ''
+  if (unwrapped && typeof unwrapped === 'object') {
+    const c = unwrapped.reply ?? unwrapped.output ?? unwrapped.text ?? unwrapped.message ?? unwrapped.content ?? unwrapped.response
+    content = c === undefined ? '' : String(c)
+  } else if (unwrapped != null) {
+    content = String(unwrapped)
+  }
+  if (content.trim().startsWith('{')) {
+    try {
+      const parsed = JSON.parse(content)
+      if (parsed && typeof parsed === 'object') {
+        content = String(parsed.reply ?? parsed.output ?? parsed.text ?? parsed.message ?? parsed.content ?? content)
+      }
+    } catch {
+      // not valid JSON, keep as-is
+    }
+  }
   return {
     role: 'assistant',
-    content: data.content || data.output || data.text || data.message || data.response || JSON.stringify(data),
+    content: content || JSON.stringify(data),
     timestamp: new Date().toISOString(),
   }
 }
