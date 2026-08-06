@@ -49,15 +49,19 @@ export default function StatsGrid({ stats }: StatsGridProps) {
           }}>
             {icons[item.label]}
           </div>
-          <div style={{
-            fontFamily: 'var(--font-heading)',
-            fontSize: 20,
-            fontWeight: 700,
-            color: item.primary ? 'var(--accent)' : 'var(--text-heading)',
-            letterSpacing: '-0.03em',
-            lineHeight: 1.2,
-            marginBottom: 4,
-          }}>
+          <div
+            className="stat-value"
+            style={{
+              fontFamily: 'var(--font-heading)',
+              fontSize: 20,
+              fontWeight: 700,
+              color: item.primary ? 'var(--accent)' : 'var(--text-heading)',
+              letterSpacing: '-0.03em',
+              lineHeight: 1.2,
+              marginBottom: 4,
+              wordBreak: 'break-word',
+            }}
+          >
             {item.value}
           </div>
           <div style={{
