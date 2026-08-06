@@ -134,7 +134,24 @@ function App() {
 
   const handleChatSend = useCallback((message: string) => {
     if (!analysis) return
-    sendMessage(analysis.id, message, analysis.summary.architecture)
+    const repoUrl = analysis.repoUrl || 'https://github.com/dhanvithshetty-in/gitgrok'
+    const repoName = repoUrl
+      .replace(/^https?:\/\/(www\.)?github\.com\//, '')
+      .replace(/\/$/, '')
+      .replace(/\.git$/, '') || 'dhanvithshetty-in/gitgrok'
+    const context = [
+      `Repository: ${repoName}`,
+      `Purpose: ${analysis.summary?.purpose || ''}`,
+      `Architecture: ${analysis.summary?.architecture || ''}`,
+      `Code quality: ${analysis.summary?.quality || ''}`,
+    ].filter(Boolean).join('\n')
+    sendMessage({
+      analysisId: analysis.id,
+      message,
+      repoName,
+      repoUrl,
+      context,
+    })
   }, [analysis, sendMessage])
 
   const handleSelectHistory = useCallback((id: string) => {

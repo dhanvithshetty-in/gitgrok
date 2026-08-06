@@ -60,8 +60,10 @@ export interface AnalysisResponse {
 }
 
 export interface ChatRequest {
-  analysisId: string
+  analysisId?: string
   message: string
+  repoName?: string
+  repoUrl?: string
   context?: string
 }
 
