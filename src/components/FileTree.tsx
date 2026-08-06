@@ -117,7 +117,7 @@ function TreeNode({ node, depth }: { node: FileNode; depth: number }) {
 export default function FileTree({ nodes }: FileTreeProps) {
   // Convert flat string[] into FileNode[] if needed
   const fileNodes: FileNode[] = Array.isArray(nodes) && nodes.length > 0 && typeof nodes[0] === 'string'
-    ? (nodes as string[]).map(p => ({ name: p.split('/').pop() || p, path: p, type: 'file' as const }))
+    ? (nodes as unknown as string[]).map(p => ({ name: p.split('/').pop() || p, path: p, type: 'file' as const }))
     : (nodes as FileNode[])
 
   return (
