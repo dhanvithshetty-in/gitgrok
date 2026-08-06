@@ -9,7 +9,11 @@ export default function MermaidRenderer({ diagram }: MermaidRendererProps) {
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    if (!diagram || !containerRef.current) return
+    const source = diagram?.trim() || ''
+    if (!source || !containerRef.current) return
+
+    let cancelled = false
+    const renderId = `gitgrok-mermaid-${Math.random().toString(36).slice(2, 8)}`
 
     async function render() {
       try {
@@ -19,16 +23,21 @@ export default function MermaidRenderer({ diagram }: MermaidRendererProps) {
           theme: window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'default',
           securityLevel: 'loose',
         })
-        const { svg } = await mermaid.render('mermaid-svg', diagram)
-        if (containerRef.current) {
+        const { svg } = await mermaid.render(renderId, source)
+        if (!cancelled && containerRef.current) {
           containerRef.current.innerHTML = svg
         }
-        setError(null)
+        if (!cancelled) setError(null)
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to render diagram')
+        if (!cancelled) {
+          setError(err instanceof Error ? err.message : 'Failed to render diagram')
+        }
       }
     }
     render()
+    return () => {
+      cancelled = true
+    }
   }, [diagram])
 
   if (error) {
@@ -44,6 +53,14 @@ export default function MermaidRenderer({ diagram }: MermaidRendererProps) {
           whiteSpace: 'pre-wrap',
           fontFamily: 'var(--font-mono)',
         }}>{diagram}</pre>
+      </div>
+    )
+  }
+
+  if (!diagram || !diagram.trim()) {
+    return (
+      <div className="surface-elevated" style={{ padding: 24 }}>
+        <p style={{ fontSize: 13, color: 'var(--text-tertiary)' }}>No architecture diagram was generated for this repository.</p>
       </div>
     )
   }
