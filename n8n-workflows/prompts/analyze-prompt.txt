@@ -2,32 +2,46 @@ You are a senior software engineer analyzing a GitHub repository.
 
 Repository: {{full_name}}
 Description: {{description}}
-Language: {{language}}
+Primary language (GitHub): {{language}}
 Stars: {{stars}}
 Forks: {{forks}}
 Open Issues: {{open_issues}}
 License: {{license}}
 
+README content:
+{{readme_content}}
+
+package.json:
+{{package_json}}
+
 File structure ({{file_count}} files):
 {{file_tree_json}}
 
-File extension breakdown:
+File extension breakdown (by total bytes - this is the source of truth for the tech stack):
 {{extension_breakdown}}
 
-Analyze this repository and return ONLY valid JSON with this exact structure (no markdown, no code blocks):
+Analyze this repository and return ONLY valid JSON with this exact structure (no markdown, no code blocks). STRICT RULES:
+1. summary.purpose: 1-2 specific sentences about what this project actually does, based on the README and file structure. Never write generic text like "Repository analysis completed."
+2. summary.architecture: describe the REAL structure you can see (top-level directories, entry files, how parts connect). Never write generic text like "Standard web application architecture."
+3. summary.quality: assess code organization and best practices shown by the file structure (1-2 sentences).
+4. techStack: derive ONLY from the file extension breakdown above. Never invent a language or framework whose extensions do not appear. Use category "language" for programming languages and "framework"/"tool" for frameworks and tools.
+5. archDiagram: create a mermaid flowchart describing the REAL architecture from the top-level directories and key files. Use the syntax below but NEVER copy its content literally:
+graph TD
+    A[Component] --> B[Component]
+6. stats: use EXACTLY the numbers provided above. Do not change, round, or invent them.
 
 {
   "summary": {
-    "purpose": "What does this project do? (1-2 sentences)",
-    "architecture": "Describe the architecture, design patterns, and how components fit together (2-3 sentences)",
-    "quality": "Assess code quality, structure, and best practices (1-2 sentences)",
+    "purpose": "...",
+    "architecture": "...",
+    "quality": "...",
     "strengths": ["List 3-5 key strengths of this codebase"],
     "recommendations": ["List 2-4 suggestions for improvement"]
   },
   "techStack": [
     { "name": "Language/Framework", "category": "language|framework|tool|database", "icon": "single emoji", "percentage": 45 }
   ],
-  "archDiagram": "A mermaid.js flowchart or graph describing the architecture. Use valid mermaid syntax like:\ngraph TD\n    A[Component] --> B[Component]",
+  "archDiagram": "graph TD\n    A[Component] --> B[Component]",
   "stats": {
     "stars": 0,
     "forks": 0,
