@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useRef } from 'react'
 import type { RepoAnalysis, AnalysisRequest } from '../types'
 import { triggerAnalysis } from '../services/n8n'
 
@@ -14,21 +14,27 @@ export function useAnalysis(): UseAnalysisReturn {
   const [analysis, setAnalysis] = useState<RepoAnalysis | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const requestSeq = useRef(0)
 
   const submitAnalysis = useCallback(async (req: AnalysisRequest) => {
+    const seq = ++requestSeq.current
+    setAnalysis(null)
     setIsLoading(true)
     setError(null)
     try {
       const result = await triggerAnalysis(req)
+      if (seq !== requestSeq.current) return
       setAnalysis(result)
     } catch (err) {
+      if (seq !== requestSeq.current) return
       setError(err instanceof Error ? err.message : 'Analysis failed')
     } finally {
-      setIsLoading(false)
+      if (seq === requestSeq.current) setIsLoading(false)
     }
   }, [])
 
   const reset = useCallback(() => {
+    requestSeq.current++
     setAnalysis(null)
     setIsLoading(false)
     setError(null)
