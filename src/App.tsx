@@ -5,8 +5,6 @@ import HistorySidebar from './components/HistorySidebar'
 import LoadingSkeleton from './components/LoadingSkeleton'
 import { useAnalysis } from './hooks/useAnalysis'
 import { useChat } from './hooks/useChat'
-import { mockAnalysis } from './services/mockData'
-import type { RepoAnalysis } from './types'
 
 const STORAGE_KEY = 'gitgrok-history'
 
@@ -38,12 +36,6 @@ const LogoIcon = () => (
   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" style={{ color: 'currentColor' }}>
     <circle cx="11" cy="11" r="8" />
     <line x1="21" y1="21" x2="16.65" y2="16.65" />
-  </svg>
-)
-
-const PlayIcon = () => (
-  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-    <polygon points="5 3 19 12 5 21 5 3" />
   </svg>
 )
 
@@ -87,14 +79,10 @@ const ChatIcon = () => (
 )
 
 function App() {
-  const { analysis: liveAnalysis, isLoading: liveLoading, error, submitAnalysis, reset } = useAnalysis()
+  const { analysis, isLoading, error, submitAnalysis, reset } = useAnalysis()
   const { messages, isStreaming, sendMessage, clearMessages } = useChat()
   const [history, setHistory] = useState<HistoryItem[]>(loadHistory)
-  const [demoAnalysis, setDemoAnalysis] = useState<RepoAnalysis | null>(null)
   const [showSplash, setShowSplash] = useState(true)
-
-  const analysis = liveAnalysis || demoAnalysis
-  const isLoading = liveLoading
 
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(history))
@@ -110,27 +98,8 @@ function App() {
   }, [analysis ? analysis.id : null])
 
   const handleSubmit = useCallback(async (url: string, branch: string) => {
-    if (url === demoAnalysis?.repoUrl) {
-      setDemoAnalysis(demoAnalysis)
-      return
-    }
     await submitAnalysis({ repoUrl: url, branch })
-  }, [submitAnalysis, demoAnalysis])
-
-  const handleTryDemo = useCallback(() => {
-    const demo = { ...mockAnalysis, id: `demo-${Date.now()}` }
-    setDemoAnalysis(demo)
-    setHistory(prev => {
-      const newItem: HistoryItem = {
-        id: demo.id,
-        repoUrl: demo.repoUrl,
-        branch: demo.branch,
-        analyzedAt: demo.analyzedAt,
-        summary: demo.summary.purpose.slice(0, 100),
-      }
-      return [newItem, ...prev.filter(h => h.repoUrl !== demo.repoUrl)].slice(0, 20)
-    })
-  }, [])
+  }, [submitAnalysis])
 
   const handleChatSend = useCallback((message: string) => {
     if (!analysis) return
@@ -166,7 +135,6 @@ function App() {
   const handleNewAnalysis = useCallback(() => {
     reset()
     clearMessages()
-    setDemoAnalysis(null)
   }, [reset, clearMessages])
 
   if (showSplash) {
@@ -242,12 +210,6 @@ function App() {
             </div>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            {!analysis && !isLoading && (
-              <button className="btn-accent" onClick={handleTryDemo} style={{ padding: '8px 16px', fontSize: 13 }}>
-                <PlayIcon />
-                Try Demo
-              </button>
-            )}
             {analysis && (
               <button className="btn-ghost" onClick={handleNewAnalysis}>
                 <PlusIcon />
@@ -283,13 +245,6 @@ function App() {
                   Paste a repository URL and get instant AI-powered analysis — architecture overview,
                   tech stack, file structure, and dependency graphs.
                 </p>
-              </div>
-
-              <div className="animate-fade-in-up" style={{ animationDelay: '0.2s', marginTop: 32 }}>
-                <button className="btn-accent" onClick={handleTryDemo} style={{ padding: '14px 32px', fontSize: 15, gap: 10 }}>
-                  <PlayIcon />
-                  Try Demo Analysis
-                </button>
               </div>
 
               <div className="animate-fade-in-up" style={{ animationDelay: '0.3s', marginTop: 40, marginBottom: 20 }}>
@@ -352,9 +307,6 @@ function App() {
             }}>
               <p style={{ fontSize: 14, fontWeight: 600, color: 'var(--error)', marginBottom: 4 }}>Analysis failed</p>
               <p style={{ fontSize: 13, color: 'var(--text-secondary)', marginBottom: 16 }}>{error}</p>
-              <button className="btn-accent" onClick={handleTryDemo} style={{ fontSize: 13 }}>
-                Try Demo Instead
-              </button>
             </div>
           </div>
         )}
