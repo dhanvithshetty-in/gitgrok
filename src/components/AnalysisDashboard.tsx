@@ -80,7 +80,7 @@ export default function AnalysisDashboard({
       <StatsGrid stats={analysis.stats} />
 
       <div className="animate-fade-in-up stagger-2">
-        <CodeHealthGauge summary={analysis.summary} />
+        <CodeHealthGauge analysis={analysis} />
       </div>
 
       <SummaryCard summary={analysis.summary} />

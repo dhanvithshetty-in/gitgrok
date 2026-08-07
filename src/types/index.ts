@@ -8,6 +8,10 @@ export interface RepoAnalysis {
   archDiagram: string
   stats: RepoStats
   analyzedAt: string
+  healthScore?: number
+  healthGrade?: string
+  score?: number
+  grade?: string
 }
 
 export interface RepoSummary {
@@ -16,6 +20,10 @@ export interface RepoSummary {
   quality: string
   strengths: string[]
   recommendations: string[]
+  healthScore?: number
+  healthGrade?: string
+  score?: number
+  grade?: string
 }
 
 export interface TechStack {

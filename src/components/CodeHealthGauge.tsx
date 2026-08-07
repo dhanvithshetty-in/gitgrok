@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react'
-import type { RepoSummary } from '../types'
+import type { RepoAnalysis } from '../types'
 
 interface CodeHealthGaugeProps {
-  summary: RepoSummary
+  analysis: RepoAnalysis
 }
 
 function computeGrade(quality: string, strengthsCount: number): { letter: string; score: number; color: string } {
@@ -17,15 +17,46 @@ function computeGrade(quality: string, strengthsCount: number): { letter: string
   return { letter, score, color }
 }
 
+function toFiniteScore(value: unknown, max: number): number | null {
+  if (typeof value === 'number' && Number.isFinite(value)) {
+    return Math.max(0, Math.min(max, Math.round(value)))
+  }
+  if (typeof value === 'string' && value.trim() !== '' && Number.isFinite(Number(value))) {
+    return Math.max(0, Math.min(max, Math.round(Number(value))))
+  }
+  return null
+}
+
 const springIn = (delay: number) => ({
   opacity: 0,
   transform: 'translateY(12px) scale(0.95)',
   animation: `springIn 0.7s cubic-bezier(0.16, 1, 0.3, 1) ${delay}s forwards`,
 })
 
-export default function CodeHealthGauge({ summary }: CodeHealthGaugeProps) {
+export default function CodeHealthGauge({ analysis }: CodeHealthGaugeProps) {
   const [mounted, setMounted] = useState(false)
-  const { letter, score, color } = computeGrade(summary.quality, summary.strengths.length)
+  const summary = analysis.summary
+  const fallback = computeGrade(summary.quality, summary.strengths.length)
+
+  const rawScore =
+    analysis?.summary?.healthScore ??
+    analysis?.healthScore ??
+    analysis?.summary?.score ??
+    analysis?.score ??
+    null
+  const rawGrade =
+    analysis?.summary?.healthGrade ??
+    analysis?.healthGrade ??
+    analysis?.summary?.grade ??
+    analysis?.grade ??
+    null
+
+  const healthScore = toFiniteScore(rawScore, 100) ?? fallback.score
+  const healthGrade =
+    typeof rawGrade === 'string' && /^[A-F]$/i.test(rawGrade.trim())
+      ? rawGrade.trim().toUpperCase()
+      : fallback.letter
+  const color = healthScore >= 80 ? 'var(--success)' : healthScore >= 60 ? 'var(--warning)' : 'var(--error)'
 
   useEffect(() => {
     const t = setTimeout(() => setMounted(true), 100)
@@ -33,7 +64,7 @@ export default function CodeHealthGauge({ summary }: CodeHealthGaugeProps) {
   }, [])
 
   const circumference = 2 * Math.PI * 42
-  const offset = circumference - (score / 100) * circumference
+  const offset = circumference - (healthScore / 100) * circumference
 
   return (
     <div className="surface-elevated" style={{
@@ -82,13 +113,13 @@ export default function CodeHealthGauge({ summary }: CodeHealthGaugeProps) {
               opacity: mounted ? 1 : 0,
               transform: mounted ? 'scale(1)' : 'scale(0.5)',
               transition: 'all 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) 0.5s',
-            }}>{letter}</span>
+            }}>{healthGrade}</span>
             <span style={{
               fontFamily: 'var(--font-mono)',
               fontSize: 11,
               color: 'var(--text-tertiary)',
               marginTop: 2,
-            }}>{score}%</span>
+            }}>{healthScore}%</span>
           </div>
         </div>
 

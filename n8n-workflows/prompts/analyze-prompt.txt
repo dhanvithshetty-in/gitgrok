@@ -24,17 +24,20 @@ Analyze this repository and return ONLY valid JSON with this exact structure (no
 1. summary.purpose: 1-2 specific sentences about what this project actually does, based on the README and file structure. Never write generic text like "Repository analysis completed."
 2. summary.architecture: describe the REAL structure you can see (top-level directories, entry files, how parts connect). Never write generic text like "Standard web application architecture."
 3. summary.quality: assess code organization and best practices shown by the file structure (1-2 sentences).
-4. techStack: derive ONLY from the file extension breakdown above. Never invent a language or framework whose extensions do not appear. Use category "language" for programming languages and "framework"/"tool" for frameworks and tools.
-5. archDiagram: create a mermaid flowchart describing the REAL architecture from the top-level directories and key files. Use the syntax below but NEVER copy its content literally:
+4. summary.healthScore: an integer between 0 and 100 estimating overall code health based on code quality, structure, and testing. summary.healthGrade: a single letter (A-F) that matches the healthScore (A=90-100, B=80-89, C=70-79, D=60-69, F=0-59).
+5. techStack: derive ONLY from the file extension breakdown above. Never invent a language or framework whose extensions do not appear. Use category "language" for programming languages and "framework"/"tool" for frameworks and tools.
+6. archDiagram: create a mermaid flowchart describing the REAL architecture from the top-level directories and key files. Use the syntax below but NEVER copy its content literally:
 graph TD
     A[Component] --> B[Component]
-6. stats: use EXACTLY the numbers provided above. Do not change, round, or invent them.
+7. stats: use EXACTLY the numbers provided above. Do not change, round, or invent them.
 
 {
   "summary": {
     "purpose": "...",
     "architecture": "...",
     "quality": "...",
+    "healthScore": 0,
+    "healthGrade": "A",
     "strengths": ["List 3-5 key strengths of this codebase"],
     "recommendations": ["List 2-4 suggestions for improvement"]
   },
