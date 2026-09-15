@@ -55,6 +55,7 @@ export interface ChatMessage {
   role: 'user' | 'assistant'
   content: string
   timestamp: string
+  citedFiles?: string[]
 }
 
 export interface AnalysisRequest {

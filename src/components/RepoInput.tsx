@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { isGithubUrl } from '../services/errors'
 
 interface RepoInputProps {
   onSubmit: (url: string, branch: string) => void
@@ -21,29 +22,65 @@ const BoltIcon = () => (
 export default function RepoInput({ onSubmit, isLoading }: RepoInputProps) {
   const [url, setUrl] = useState('')
   const [branch, setBranch] = useState('main')
+  const [validationError, setValidationError] = useState<string | null>(null)
+
+  const trimmed = url.trim()
+  const urlInvalid = trimmed.length > 0 && !isGithubUrl(trimmed)
+  const disabled = isLoading || urlInvalid || trimmed.length === 0
+
+  const validate = (value: string) => {
+    const v = value.trim()
+    if (v.length === 0) {
+      setValidationError(null)
+    } else if (!isGithubUrl(v)) {
+      setValidationError('Enter a valid GitHub URL like https://github.com/facebook/react')
+    } else {
+      setValidationError(null)
+    }
+  }
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    if (!url.trim() || !url.includes('github.com')) return
-    onSubmit(url.trim(), branch)
+    const v = url.trim()
+    if (v.length === 0 || !isGithubUrl(v)) {
+      setValidationError('Enter a valid public GitHub repository URL, e.g. https://github.com/facebook/react')
+      return
+    }
+    setValidationError(null)
+    onSubmit(v, branch)
   }
 
   return (
     <form onSubmit={handleSubmit}>
-      <div className="command-input-wrapper">
+      <div
+        className="command-input-wrapper"
+        style={urlInvalid ? { borderColor: 'rgba(239, 68, 68, 0.6)' } : undefined}
+      >
         <span className="input-icon"><SearchIcon /></span>
         <input
           type="text"
           value={url}
-          onChange={e => setUrl(e.target.value)}
+          onChange={e => {
+            setUrl(e.target.value)
+            validate(e.target.value)
+          }}
           placeholder="https://github.com/facebook/react"
           className="input-field"
           disabled={isLoading}
+          aria-invalid={urlInvalid}
         />
         <span className="input-hint">
           <kbd>⌘K</kbd>
         </span>
       </div>
+      {validationError && (
+        <p style={{
+          marginTop: 8,
+          fontSize: 12,
+          color: 'var(--error, #ef4444)',
+          textAlign: 'center',
+        }}>{validationError}</p>
+      )}
       <div style={{
         display: 'flex',
         alignItems: 'center',
@@ -69,7 +106,7 @@ export default function RepoInput({ onSubmit, isLoading }: RepoInputProps) {
         </div>
         <button
           type="submit"
-          disabled={isLoading || !url.includes('github.com')}
+          disabled={disabled}
           className="btn-accent"
           style={{ padding: '10px 24px', fontSize: 14 }}
         >

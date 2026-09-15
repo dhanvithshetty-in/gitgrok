@@ -1,6 +1,7 @@
 import { useState, useCallback, useRef } from 'react'
 import type { RepoAnalysis, AnalysisRequest } from '../types'
 import { triggerAnalysis } from '../services/n8n'
+import { ApiError, ERROR_MESSAGES } from '../services/errors'
 
 interface UseAnalysisReturn {
   analysis: RepoAnalysis | null
@@ -27,7 +28,7 @@ export function useAnalysis(): UseAnalysisReturn {
       setAnalysis(result)
     } catch (err) {
       if (seq !== requestSeq.current) return
-      setError(err instanceof Error ? err.message : 'Analysis failed')
+      setError(err instanceof ApiError ? err.message : ERROR_MESSAGES.UPSTREAM_ERROR)
     } finally {
       if (seq === requestSeq.current) setIsLoading(false)
     }
