@@ -65,6 +65,11 @@ export async function triggerAnalysis(req: AnalysisRequest): Promise<RepoAnalysi
   return unwrap(data) as RepoAnalysis
 }
 
+export async function triggerIngestion(req: AnalysisRequest): Promise<{ indexedFiles: number; chunks: number }> {
+  const data = await postJson<unknown>('/gitgrok-ingest', req)
+  return unwrap(data) as { indexedFiles: number; chunks: number }
+}
+
 export async function sendChatMessage(req: ChatRequest): Promise<ChatMessage> {
   const data = await postJson<unknown>('/gitgrok-chat', req)
   const unwrapped = unwrap(data) as

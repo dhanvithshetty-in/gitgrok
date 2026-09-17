@@ -1,6 +1,6 @@
 import { useState, useCallback, useRef } from 'react'
 import type { RepoAnalysis, AnalysisRequest } from '../types'
-import { triggerAnalysis } from '../services/n8n'
+import { triggerAnalysis, triggerIngestion } from '../services/n8n'
 import { ApiError, ERROR_MESSAGES } from '../services/errors'
 
 interface UseAnalysisReturn {
@@ -23,7 +23,14 @@ export function useAnalysis(): UseAnalysisReturn {
     setIsLoading(true)
     setError(null)
     try {
-      const result = await triggerAnalysis(req)
+      // Trigger analysis and ingestion concurrently so embeddings are ready for RAG chat
+      const [result] = await Promise.all([
+        triggerAnalysis(req),
+        triggerIngestion(req).catch(err => {
+          console.warn('Ingestion background warning:', err)
+          return null
+        })
+      ])
       if (seq !== requestSeq.current) return
       setAnalysis(result)
     } catch (err) {
