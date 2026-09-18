@@ -12,7 +12,6 @@ const SAMPLE_REPOS = [
   { name: 'expressjs/express', label: 'Express', icon: '🚀', url: 'https://github.com/expressjs/express' },
   { name: 'python/cpython', label: 'Python', icon: '🐍', url: 'https://github.com/python/cpython' },
   { name: 'vercel/next.js', label: 'Next.js', icon: '▲', url: 'https://github.com/vercel/next.js' },
-  { name: 'dhanvithshetty-in/gitgrok', label: 'GitGrok AI', icon: '⚡', url: 'https://github.com/dhanvithshetty-in/gitgrok' },
 ]
 
 export default function Hero3DSection({ onSubmit, isLoading, initialUrl = '' }: Hero3DSectionProps) {
