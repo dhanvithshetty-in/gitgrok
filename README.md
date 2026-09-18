@@ -5,10 +5,6 @@ Paste any GitHub URL. GitGrok returns a complete engineering overview of the rep
 🔗 **Live app:** https://dhanvith-n8n-frontend.slicearrow.com
 🐙 **This repo:** https://github.com/dhanvithshetty-in/gitgrok
 
-> ![GitGrok dashboard](docs/screenshot.png)
->
-> <video src="docs/gitgrok-demo.mp4" controls></video>
-
 ## Features
 
 - **Repo stats** — stars, forks, open issues, license, contributors, last commit (live GitHub API)
@@ -18,8 +14,6 @@ Paste any GitHub URL. GitGrok returns a complete engineering overview of the rep
 - **Summary** — purpose, architecture, code quality, strengths, and recommendations
 - **Code health gauge** — letter grade (A–F) and score (0–100) from backend AI metrics
 - **AI chat assistant** — context-aware Q&A about the repo, grounded in the analysis result
-
-> ![GitGrok AI chat](docs/screenshot-chat.png)
 
 ## How it works
 
