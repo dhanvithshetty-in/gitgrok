@@ -41,6 +41,39 @@ function TypingIndicator() {
   )
 }
 
+/** Render inline markdown: **bold**, *italic*, `code` */
+function renderChatMarkdown(text: string): React.ReactNode {
+  const lines = text.split('\n')
+  return lines.map((line, li) => {
+    const parts = line.split(/(\*\*[^*]+\*\*|\*[^*]+\*|`[^`]+`)/g)
+    const rendered = parts.map((part, i) => {
+      if (part.startsWith('**') && part.endsWith('**')) {
+        return <strong key={i} style={{ fontWeight: 700 }}>{part.slice(2, -2)}</strong>
+      }
+      if (part.startsWith('*') && part.endsWith('*')) {
+        return <em key={i}>{part.slice(1, -1)}</em>
+      }
+      if (part.startsWith('`') && part.endsWith('`')) {
+        return <code key={i} style={{ fontFamily: 'var(--font-mono)', fontSize: '0.85em', background: 'rgba(0,0,0,0.08)', padding: '1px 4px', borderRadius: 3 }}>{part.slice(1, -1)}</code>
+      }
+      return part
+    })
+    return (
+      <span key={li}>
+        {rendered}
+        {li < lines.length - 1 && <br />}
+      </span>
+    )
+  })
+}
+
+const SUGGESTED_PROMPTS = [
+  'How does the architecture work?',
+  'What are the main dependencies?',
+  'Are there any code quality issues?',
+  'Explain entry points & routing',
+]
+
 export default function ChatTab({ messages, isStreaming, onSend, onClear }: ChatTabProps) {
   const [input, setInput] = useState('')
   const bottomRef = useRef<HTMLDivElement>(null)
@@ -56,6 +89,11 @@ export default function ChatTab({ messages, isStreaming, onSend, onClear }: Chat
     if (!input.trim() || isStreaming) return
     onSend(input.trim())
     setInput('')
+  }
+
+  const handlePromptClick = (prompt: string) => {
+    if (isStreaming) return
+    onSend(prompt)
   }
 
   return (
@@ -94,12 +132,53 @@ export default function ChatTab({ messages, isStreaming, onSend, onClear }: Chat
         padding: 16,
       }}>
         {messages.length === 0 && (
-          <div style={{ textAlign: 'center', paddingTop: 48 }}>
+          <div style={{ textAlign: 'center', paddingTop: 28, paddingBottom: 16 }}>
             <ChatBubbleIcon />
-            <p style={{ fontSize: 14, color: 'var(--text-secondary)', marginBottom: 4 }}>Ask questions about the repository</p>
-            <p style={{ fontSize: 12, color: 'var(--text-tertiary)' }}>
-              e.g., "How does the architecture work?"
+            <p style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-heading)', marginTop: 8, marginBottom: 4 }}>Ask anything about the codebase</p>
+            <p style={{ fontSize: 12, color: 'var(--text-tertiary)', marginBottom: 20 }}>
+              Click a suggested question or type your own:
             </p>
+
+            <div style={{
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 8,
+              maxWidth: 320,
+              margin: '0 auto',
+            }}>
+              {SUGGESTED_PROMPTS.map((prompt, idx) => (
+                <button
+                  key={idx}
+                  type="button"
+                  onClick={() => handlePromptClick(prompt)}
+                  disabled={isStreaming}
+                  style={{
+                    background: 'var(--bg-tertiary, #f5f0eb)',
+                    border: '1px solid var(--border)',
+                    borderRadius: 10,
+                    padding: '8px 12px',
+                    fontSize: 12,
+                    color: 'var(--text-heading)',
+                    fontWeight: 500,
+                    textAlign: 'left',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s ease',
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.borderColor = 'var(--accent-border)'
+                    e.currentTarget.style.background = 'var(--accent-soft)'
+                    e.currentTarget.style.color = 'var(--accent)'
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.borderColor = 'var(--border)'
+                    e.currentTarget.style.background = 'var(--bg-tertiary, #f5f0eb)'
+                    e.currentTarget.style.color = 'var(--text-heading)'
+                  }}
+                >
+                  ✨ {prompt}
+                </button>
+              ))}
+            </div>
           </div>
         )}
         {messages.map((msg, i) => (
@@ -118,7 +197,9 @@ export default function ChatTab({ messages, isStreaming, onSend, onClear }: Chat
                 : { background: 'var(--code-bg)', backdropFilter: 'blur(8px)', color: 'var(--text-heading)', borderRadius: '14px 14px 14px 4px', border: '1px solid var(--border-subtle)' }
               ),
             }}>
-              <div style={{ whiteSpace: 'pre-wrap' }}>{msg.content}</div>
+              <div style={{ whiteSpace: msg.role === 'user' ? 'pre-wrap' : undefined }}>
+                {msg.role === 'assistant' ? renderChatMarkdown(msg.content) : msg.content}
+              </div>
               {msg.timestamp && (
                 <div style={{
                   fontSize: 11,

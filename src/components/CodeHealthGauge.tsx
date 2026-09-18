@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import type { RepoAnalysis } from '../types'
+import { renderInlineMarkdown } from './SummaryCard'
 
 interface CodeHealthGaugeProps {
   analysis: RepoAnalysis
@@ -35,8 +36,12 @@ const springIn = (delay: number) => ({
 
 export default function CodeHealthGauge({ analysis }: CodeHealthGaugeProps) {
   const [mounted, setMounted] = useState(false)
-  const summary = analysis.summary
-  const fallback = computeGrade(summary.quality, summary.strengths.length)
+  const summary = analysis?.summary || {}
+  const quality = summary.quality || 'Good codebase structure and maintainability.'
+  const strengths = Array.isArray(summary.strengths) ? summary.strengths : []
+  const recommendations = Array.isArray(summary.recommendations) ? summary.recommendations : []
+
+  const fallback = computeGrade(quality, strengths.length)
 
   const rawScore =
     analysis?.summary?.healthScore ??
@@ -139,7 +144,7 @@ export default function CodeHealthGauge({ analysis }: CodeHealthGaugeProps) {
             lineHeight: 1.7,
             fontFamily: 'var(--font-body)',
             fontWeight: 450,
-          }}>{summary.quality}</p>
+          }}>{renderInlineMarkdown(quality)}</p>
         </div>
       </div>
 
@@ -161,7 +166,7 @@ export default function CodeHealthGauge({ analysis }: CodeHealthGaugeProps) {
           }}>Strengths</h4>
         </div>
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-          {summary.strengths.map((s, i) => (
+          {strengths.map((s, i) => (
             <span
               key={i}
               style={{
@@ -181,7 +186,7 @@ export default function CodeHealthGauge({ analysis }: CodeHealthGaugeProps) {
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.5" strokeLinecap="round" style={{ flexShrink: 0 }}>
                 <polyline points="20 6 9 17 4 12" />
               </svg>
-              {s}
+              {renderInlineMarkdown(s)}
             </span>
           ))}
         </div>
@@ -205,7 +210,7 @@ export default function CodeHealthGauge({ analysis }: CodeHealthGaugeProps) {
           }}>Recommendations</h4>
         </div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-          {summary.recommendations.map((r, i) => (
+          {recommendations.map((r, i) => (
             <div
               key={i}
               style={{
@@ -239,7 +244,7 @@ export default function CodeHealthGauge({ analysis }: CodeHealthGaugeProps) {
               color: 'var(--text)',
               lineHeight: 1.6,
               fontWeight: 450,
-            }}>{r}</span>
+            }}>{renderInlineMarkdown(r)}</span>
             </div>
           ))}
         </div>

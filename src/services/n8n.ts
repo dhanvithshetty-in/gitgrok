@@ -26,7 +26,15 @@ async function postJson<T>(path: string, body: unknown): Promise<T> {
 
   if (!res.ok) throw new ApiError('UPSTREAM_ERROR', `Request failed: ${res.statusText}`)
 
-  const data = await res.json()
+  const text = await res.text()
+  let data: unknown = {}
+  if (text && text.trim()) {
+    try {
+      data = JSON.parse(text)
+    } catch {
+      data = { text }
+    }
+  }
   const error = extractApiError(data)
   if (error) throw error
   return data as T

@@ -1,9 +1,10 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { isGithubUrl } from '../services/errors'
 
 interface RepoInputProps {
   onSubmit: (url: string, branch: string) => void
   isLoading: boolean
+  initialUrl?: string
 }
 
 const SearchIcon = () => (
@@ -19,10 +20,21 @@ const BoltIcon = () => (
   </svg>
 )
 
-export default function RepoInput({ onSubmit, isLoading }: RepoInputProps) {
-  const [url, setUrl] = useState('')
+const SAMPLE_REPOS = [
+  { name: 'expressjs/express', url: 'https://github.com/expressjs/express' },
+  { name: 'facebook/react', url: 'https://github.com/facebook/react' },
+  { name: 'vitejs/vite', url: 'https://github.com/vitejs/vite' },
+  { name: 'tailwindlabs/tailwindcss', url: 'https://github.com/tailwindlabs/tailwindcss' },
+]
+
+export default function RepoInput({ onSubmit, isLoading, initialUrl = '' }: RepoInputProps) {
+  const [url, setUrl] = useState(initialUrl)
   const [branch, setBranch] = useState('main')
   const [validationError, setValidationError] = useState<string | null>(null)
+
+  useEffect(() => {
+    setUrl(initialUrl || '')
+  }, [initialUrl])
 
   const trimmed = url.trim()
   const urlInvalid = trimmed.length > 0 && !isGithubUrl(trimmed)
@@ -33,7 +45,7 @@ export default function RepoInput({ onSubmit, isLoading }: RepoInputProps) {
     if (v.length === 0) {
       setValidationError(null)
     } else if (!isGithubUrl(v)) {
-      setValidationError('Enter a valid GitHub URL like https://github.com/facebook/react')
+      setValidationError('Enter a valid GitHub URL like https://github.com/owner/repository')
     } else {
       setValidationError(null)
     }
@@ -43,11 +55,17 @@ export default function RepoInput({ onSubmit, isLoading }: RepoInputProps) {
     e.preventDefault()
     const v = url.trim()
     if (v.length === 0 || !isGithubUrl(v)) {
-      setValidationError('Enter a valid public GitHub repository URL, e.g. https://github.com/facebook/react')
+      setValidationError('Enter a valid public GitHub repository URL, e.g. https://github.com/owner/repository')
       return
     }
     setValidationError(null)
     onSubmit(v, branch)
+  }
+
+  const handleSelectSample = (sampleUrl: string) => {
+    setUrl(sampleUrl)
+    setValidationError(null)
+    onSubmit(sampleUrl, 'main')
   }
 
   return (
@@ -64,7 +82,7 @@ export default function RepoInput({ onSubmit, isLoading }: RepoInputProps) {
             setUrl(e.target.value)
             validate(e.target.value)
           }}
-          placeholder="https://github.com/facebook/react"
+          placeholder="https://github.com/owner/repository"
           className="input-field"
           disabled={isLoading}
           aria-invalid={urlInvalid}
@@ -81,6 +99,53 @@ export default function RepoInput({ onSubmit, isLoading }: RepoInputProps) {
           textAlign: 'center',
         }}>{validationError}</p>
       )}
+
+      {/* Popular Sample Pills */}
+      {!url && (
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: 6,
+          marginTop: 10,
+          flexWrap: 'wrap',
+        }}>
+          <span style={{ fontSize: 11, color: 'var(--text-tertiary)', fontWeight: 600 }}>Try sample:</span>
+          {SAMPLE_REPOS.map((sample) => (
+            <button
+              key={sample.name}
+              type="button"
+              onClick={() => handleSelectSample(sample.url)}
+              disabled={isLoading}
+              style={{
+                background: 'var(--bg-tertiary, #f5f0eb)',
+                border: '1px solid var(--border)',
+                borderRadius: 9999,
+                padding: '2px 10px',
+                fontSize: 11,
+                color: 'var(--text-secondary)',
+                fontWeight: 600,
+                fontFamily: 'var(--font-mono)',
+                cursor: 'pointer',
+                transition: 'all 0.2s ease',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.borderColor = 'var(--accent-border)'
+                e.currentTarget.style.color = 'var(--accent)'
+                e.currentTarget.style.background = 'var(--accent-soft)'
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.borderColor = 'var(--border)'
+                e.currentTarget.style.color = 'var(--text-secondary)'
+                e.currentTarget.style.background = 'var(--bg-tertiary, #f5f0eb)'
+              }}
+            >
+              {sample.name}
+            </button>
+          ))}
+        </div>
+      )}
+
       <div style={{
         display: 'flex',
         alignItems: 'center',

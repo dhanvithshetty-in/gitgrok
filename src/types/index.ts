@@ -63,9 +63,12 @@ export interface AnalysisRequest {
   branch?: string
 }
 
-export interface AnalysisResponse {
-  analysisId: string
-  status: 'pending' | 'processing' | 'completed' | 'error'
+export interface IngestResponse {
+  type: 'done'
+  repoUrl: string
+  indexedFiles: number
+  chunks: number
+  error?: string | null
 }
 
 export interface ChatRequest {
@@ -74,9 +77,5 @@ export interface ChatRequest {
   repoName?: string
   repoUrl?: string
   context?: string
-}
-
-export interface ChatChunk {
-  type: 'token' | 'done' | 'error'
-  content: string
+  history?: Array<{ role: 'user' | 'assistant'; content: string }>
 }

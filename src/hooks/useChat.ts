@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react'
 import type { ChatMessage, ChatRequest } from '../types'
-import { sendChatMessage } from '../services/n8n'
+import { clientChatResponse } from '../services/github'
 
 interface UseChatReturn {
   messages: ChatMessage[]
@@ -21,7 +21,7 @@ export function useChat(): UseChatReturn {
     setIsStreaming(true)
 
     try {
-      const response = await sendChatMessage(payload)
+      const response = await clientChatResponse(payload)
       setMessages(prev => [...prev, response])
     } catch (err) {
       setMessages(prev => [

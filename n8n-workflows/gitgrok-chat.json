@@ -1,1 +1,246 @@
-{"nodes":[{"parameters":{"httpMethod":"POST","path":"gitgrok-chat","responseMode":"responseNode","options":{"allowedOrigins":"*","responseHeaders":{"entries":[{"name":"Access-Control-Allow-Origin","value":"*"},{"name":"Access-Control-Allow-Methods","value":"POST, OPTIONS"},{"name":"Access-Control-Allow-Headers","value":"Content-Type"}]}}},"id":"ae796526-67cd-4f83-86c1-0b2a790af3a7","name":"Webhook (Receive)","type":"n8n-nodes-base.webhook","typeVersion":1,"position":[160,64],"webhookId":"gitgrok-chat"},{"parameters":{"jsCode":"const body = $input.first().json.body || $input.first().json || {};\n\nconst userMessage = body.message || body.query || body.prompt || body.chatInput || \"\";\nconst repoUrl = body.repoUrl || body.repository || body.url || \"\";\nconst contextData = body.context || body.summary || body.analysis || {};\n\n// 1. Direct repo name passed from frontend payload\nlet repoName = body.repoName || body.name || body.full_name || body.fullName || \"\";\n\n// 2. Extract from explicit repoUrl\nif (!repoName && repoUrl) {\n  repoName = repoUrl.split('/').slice(-2).join('/').replace(/\\.git$/, '');\n}\n\n// 3. Extract from stringified context\nconst contextStr = typeof contextData === 'object' ? JSON.stringify(contextData) : String(contextData);\n\nif (!repoName && contextStr) {\n  const match = contextStr.match(/([a-zA-Z0-9_\\-]+\\/[a-zA-Z0-9_\\-]+)/);\n  if (match) {\n    repoName = match[1].trim();\n  }\n}\n\n// Default fallback if payload was completely empty\nconst finalRepoName = repoName || \"dhanvithshetty-in/gitgrok\";\n\nconst fullPrompt = `\nYou are GitGrok Chat, an expert AI assistant answering questions about software repositories.\n\nCURRENT TARGET REPOSITORY:\n- Name: ${finalRepoName}\n- Context Details:\n${contextStr}\n\nUSER QUESTION:\n${userMessage}\n\nINSTRUCTIONS:\n1. When asked for the repository name or project name, explicitly state \"${finalRepoName}\".\n2. Answer all user questions using the repository details provided above.\n3. Keep responses concise and accurate.\n`;\n\nreturn [{\n  json: {\n    prompt: fullPrompt,\n    userMessage: userMessage,\n    repoUrl: repoUrl,\n    repoName: finalRepoName,\n    contextStr: contextStr\n  }\n}];"},"id":"488cce4d-42f9-4724-bfc5-7147e605385c","name":"Build Chat Prompt","type":"n8n-nodes-base.code","typeVersion":2,"position":[400,64]},{"parameters":{"url":"=https://api.groq.com/openai/v1/embeddings","method":"POST","authentication":"predefinedCredentialType","nodeCredentialType":"groqApi","sendBody":true,"contentType":"json","specifyBody":"json","jsonBody":"={{ { model: \"nomic-embed-text-v1.5\", input: $json.userMessage } }}","options":{"response":{"response":{"responseFormat":"json"}}}},"id":"c1010000-0000-4000-8000-000000000001","name":"Embed Question","type":"n8n-nodes-base.httpRequest","typeVersion":4.2,"position":[640,64],"credentials":{"groqApi":{"id":"groq-api","name":"Groq account 15"}},"onError":"continueRegularOutput"},{"parameters":{"url":"=https://YOUR-SUPABASE-URL.supabase.co/rest/v1/rpc/match_documents","method":"POST","authentication":"genericCredentialType","genericAuthType":"httpHeaderAuth","sendHeaders":true,"headerParameters":{"parameters":[{"name":"Content-Type","value":"application/json"}]},"sendBody":true,"contentType":"json","specifyBody":"json","jsonBody":"={{ { query_embedding: $json.data[0].embedding, match_count: 5, filter_repo: $(\"Build Chat Prompt\").first().json.repoUrl } }}","options":{"response":{"response":{"responseFormat":"json"}}}},"id":"c1010000-0000-4000-8000-000000000002","name":"Match Chunks","type":"n8n-nodes-base.httpRequest","typeVersion":4.2,"position":[880,64],"credentials":{"httpHeaderAuth":{"id":"supabase-api","name":"supabase-api"}},"onError":"continueRegularOutput"},{"parameters":{"jsCode":"const raw = $input.first().json || {};\nlet chunkList = null;\nif (Array.isArray(raw)) chunkList = raw;\nelse if (Array.isArray(raw.body)) chunkList = raw.body;\nelse {\n  chunkList = Object.keys(raw)\n    .filter(k => !isNaN(Number(k)) && raw[k] && typeof raw[k] === 'object')\n    .map(k => raw[k]);\n}\nif (!Array.isArray(chunkList)) chunkList = [];\n\nconst bp = $(\"Build Chat Prompt\").first().json || {};\nconst userMessage = bp.userMessage || \"\";\nconst repoUrl = bp.repoUrl || \"\";\n\nlet citedFiles = [];\n\nif (chunkList.length === 0) {\n  return [{\n    json: {\n      prompt: `You are GitGrok Chat, a helpful software engineering assistant.\n\nThe code for this repository (${repoUrl || 'the requested repository'}) has not been indexed yet.\n\nReply to the user with this exact guidance, concise: \"This repository's code hasn't been indexed yet. Run a fresh analysis and wait a few seconds, then ask again.\"\n\nUser question: ${userMessage}`,\n      citedFiles: [],\n      notIndexed: true\n    }\n  }];\n}\n\nconst contextBlock = chunkList\n  .slice(0, 5)\n  .map(c => `FILE: ${c.file_path}\\n${String(c.chunk_text || '').slice(0, 2000)}`)\n  .join('\\n\\n');\n\ncitedFiles = [...new Set(chunkList.map(c => c.file_path).filter(Boolean))].slice(0, 5);\n\nreturn [{\n  json: {\n    prompt: `You are GitGrok Chat, a senior software engineer answering questions about a specific GitHub repository.\n\nRelevant code chunks extracted from the repository source code (answer ONLY from these chunks, and cite the exact file path for every claim you make):\n\n${contextBlock}\n\nUser question: ${userMessage}\n\nAnswer concisely and specifically. Reference the file paths in your answer. If the chunks have enough context, explain the relevant code. If they do not, say so honestly and tell the user what would be needed.`,\n    citedFiles,\n    notIndexed: false\n  }\n}];"},"id":"c1010000-0000-4000-8000-000000000003","name":"Build RAG Prompt","type":"n8n-nodes-base.code","typeVersion":2,"position":[1120,64]},{"parameters":{"text":"={{ $json.prompt }}","options":{"systemMessage":"You are GitGrok Chat, a helpful software engineering assistant."}},"id":"f214fa2f-3f2e-4bfe-ae00-23dc897a379d","name":"AI Agent (Groq)","type":"@n8n/n8n-nodes-langchain.agent","typeVersion":1,"position":[1360,-48]},{"parameters":{"model":"qwen/qwen3.8-27b","options":{"temperature":0.7}},"id":"08c5e48a-7f88-40c1-9884-1e17fc4c69b1","name":"Groq Chat Model","type":"@n8n/n8n-nodes-langchain.lmChatGroq","typeVersion":1,"position":[1360,208],"credentials":{"groqApi":{"id":"groq-api","name":"Groq account 15"}}},{"parameters":{"jsCode":"const ai = $input.first().json || {};\nconst content = String(ai.output || ai.text || ai.message?.content || ai.reply || ai.response || \"\").trim();\nconst rag = $(\"Build RAG Prompt\").first().json || {};\n\nreturn [{\n  json: {\n    type: 'done',\n    content,\n    citedFiles: rag.citedFiles || [],\n    notIndexed: rag.notIndexed || false\n  }\n}];"},"id":"53083676-2fe8-4e20-a1dd-9a77ac08bc91","name":"Format Response","type":"n8n-nodes-base.code","typeVersion":2,"position":[1600,64]},{"parameters":{"respondWith":"json","responseBody":"={{ $json }}","options":{"responseHeaders":{"entries":[{"name":"Access-Control-Allow-Origin","value":"*"},{"name":"Access-Control-Allow-Methods","value":"POST, OPTIONS"},{"name":"Access-Control-Allow-Headers","value":"Content-Type"}]}}},"id":"22f12751-340f-47a3-bb49-1a59bda12152","name":"Respond to Webhook","type":"n8n-nodes-base.respondToWebhook","typeVersion":1,"position":[1840,64]}],"connections":{"Webhook (Receive)":{"main":[[{"node":"Build Chat Prompt","type":"main","index":0}]]},"Build Chat Prompt":{"main":[[{"node":"Embed Question","type":"main","index":0}]]},"Embed Question":{"main":[[{"node":"Match Chunks","type":"main","index":0}]]},"Match Chunks":{"main":[[{"node":"Build RAG Prompt","type":"main","index":0}]]},"Build RAG Prompt":{"main":[[{"node":"AI Agent (Groq)","type":"main","index":0}]]},"AI Agent (Groq)":{"main":[[{"node":"Format Response","type":"main","index":0}]]},"Groq Chat Model":{"ai_languageModel":[[{"node":"AI Agent (Groq)","type":"ai_languageModel","index":0}]]},"Format Response":{"main":[[{"node":"Respond to Webhook","type":"main","index":0}]]}},"pinData":{},"meta":{"templateCredsSetupCompleted":true,"instanceId":"5108cd956a95384b38f4fa3f85831dc02a4793b9014b3e181a2e4ba23947b00c"}}
+{
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "gitgrok-chat",
+        "responseMode": "responseNode",
+        "options": {
+          "allowedOrigins": "*",
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Access-Control-Allow-Origin",
+                "value": "*"
+              },
+              {
+                "name": "Access-Control-Allow-Methods",
+                "value": "POST, OPTIONS"
+              },
+              {
+                "name": "Access-Control-Allow-Headers",
+                "value": "Content-Type"
+              }
+            ]
+          }
+        }
+      },
+      "id": "87144337-62d9-4b77-8b05-251422926e7b",
+      "name": "Webhook (Receive)",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [
+        -1904,
+        224
+      ],
+      "webhookId": "gitgrok-chat"
+    },
+    {
+      "parameters": {
+        "jsCode": "const body = $input.first().json.body || $input.first().json || {};\n\nconst userMessage = body.message || body.query || body.prompt || body.chatInput || \"\";\nconst repoUrl = body.repoUrl || body.repository || body.url || \"\";\nconst contextData = body.context || body.summary || body.analysis || {};\nconst history = Array.isArray(body.history) ? body.history.slice(-6) : [];\n\nlet repoName = body.repoName || body.name || body.full_name || body.fullName || \"\";\n\nif (!repoName && repoUrl) {\n  repoName = repoUrl.split('/').slice(-2).join('/').replace(/\\.git$/, '');\n}\n\nconst contextStr = typeof contextData === 'object' ? JSON.stringify(contextData) : String(contextData);\n\nif (!repoName && contextStr) {\n  const match = contextStr.match(/([a-zA-Z0-9_\\-]+\\/[a-zA-Z0-9_\\-]+)/);\n  if (match) {\n    repoName = match[1].trim();\n  }\n}\n\nconst finalRepoName = repoName || \"sirpi-in/csr-n8n-frontend\";\n\nlet historyStr = \"\";\nif (history.length > 0) {\n  historyStr = \"\\nRECENT CONVERSATION HISTORY:\\n\" + history.map(h => `${h.role === 'user' ? 'User' : 'Assistant'}: ${h.content}`).join(\"\\n\");\n}\n\nreturn [{\n  json: {\n    userMessage,\n    repoUrl,\n    repoName: finalRepoName,\n    contextStr,\n    historyStr\n  }\n}];"
+      },
+      "id": "3d45aa8a-d1a3-4f26-a5ea-7acf8bb080df",
+      "name": "Build Chat Prompt",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1664,
+        224
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "function getVector(text) {\n  const vec = new Array(768).fill(0);\n  const words = String(text || '').toLowerCase().match(/[a-z0-9_$]+/g) || [];\n  if (words.length === 0) return vec;\n  \n  for (const word of words) {\n    let hash = 5381;\n    for (let i = 0; i < word.length; i++) {\n      hash = ((hash << 5) + hash) + word.charCodeAt(i);\n      hash = hash & hash;\n    }\n    const idx = Math.abs(hash) % 768;\n    vec[idx] += 1;\n  }\n  \n  let norm = Math.sqrt(vec.reduce((sum, v) => sum + v * v, 0));\n  if (norm === 0) norm = 1;\n  return vec.map(v => Number((v / norm).toFixed(6)));\n}\n\nconst input = $input.first().json || {};\nconst userMessage = input.userMessage || '';\nconst embedding = getVector(userMessage);\n\nreturn [{\n  json: {\n    data: [{ embedding }]\n  }\n}];"
+      },
+      "id": "175d244c-1948-433b-9e0a-67ee967ed08c",
+      "name": "Embed Question",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1424,
+        224
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const bp = $(\"Build Chat Prompt\").first().json || {};\nconst eq = $input.first().json || {};\nconst embedding = eq.data && eq.data[0] && eq.data[0].embedding;\nconst repoUrl = bp.repoUrl || \"\";\n\nlet chunks = [];\nif (Array.isArray(embedding)) {\n  try {\n    const res = await fetch('https://mkepimgmsatrifnxwana.supabase.co/rest/v1/rpc/match_documents', {\n      method: 'POST',\n      headers: {\n        'Content-Type': 'application/json',\n        'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1rZXBpbWdtc2F0cmlmbnh3YW5hIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODk2MTE1NjEsImV4cCI6MjEwNTE4NzU2MX0.dGTRT7x4rxPZ2eYe7jpwzGhXZH9AC725oIYKmhz4u_c',\n        'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1rZXBpbWdtc2F0cmlmbnh3YW5hIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODk2MTE1NjEsImV4cCI6MjEwNTE4NzU2MX0.dGTRT7x4rxPZ2eYe7jpwzGhXZH9AC725oIYKmhz4u_c'\n      },\n      body: JSON.stringify({\n        query_embedding: embedding,\n        match_count: 5,\n        filter_repo: repoUrl\n      })\n    });\n    if (res.ok) {\n      const data = await res.json();\n      if (Array.isArray(data)) chunks = data;\n    }\n  } catch (e) {}\n}\n\nreturn [{\n  json: {\n    chunks,\n    userMessage: bp.userMessage,\n    repoName: bp.repoName,\n    repoUrl: bp.repoUrl,\n    contextStr: bp.contextStr,\n    historyStr: bp.historyStr\n  }\n}];"
+      },
+      "id": "53732afd-387b-4b11-b2ae-9bc1194817a3",
+      "name": "Match Chunks",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1184,
+        224
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const input = $input.first().json || {};\nconst chunks = input.chunks || [];\nconst userMessage = input.userMessage || \"\";\nconst repoName = input.repoName || \"this repository\";\nconst repoUrl = input.repoUrl || \"\";\nconst contextStr = input.contextStr || \"\";\nconst historyStr = input.historyStr || \"\";\n\nlet prompt = \"\";\nlet citedFiles = [];\n\nif (chunks.length > 0) {\n  const contextBlock = chunks\n    .slice(0, 5)\n    .map(c => `FILE: ${c.file_path}\\n${String(c.chunk_text || '').slice(0, 2000)}`)\n    .join('\\n\\n');\n\n  citedFiles = [...new Set(chunks.map(c => c.file_path).filter(Boolean))].slice(0, 5);\n\n  prompt = `You are GitGrok Chat, an expert AI assistant answering questions about the repository \"${repoName}\".\n\nRELEVANT SOURCE CODE CHUNKS:\n${contextBlock}\n\nREPOSITORY METADATA:\n- Name: ${repoName}\n- URL: ${repoUrl}\n${historyStr}\n\nUSER QUESTION:\n${userMessage}\n\nINSTRUCTIONS:\n1. Answer accurately and specifically.\n2. Do NOT use markdown bold asterisks (**) or triple asterisks (***).\n3. If asked for the repository name or project name, explicitly state \"${repoName}\".\n4. Reference exact file paths for code claims.`;\n} else {\n  prompt = `You are GitGrok Chat, an expert AI assistant answering questions about software repositories.\n\nTARGET REPOSITORY DETAILS:\n- Name: ${repoName}\n- URL: ${repoUrl}\n${contextStr ? `- Overview Context: ${contextStr}` : ''}\n${historyStr}\n\nUSER QUESTION:\n${userMessage}\n\nINSTRUCTIONS:\n1. Do NOT use markdown bold asterisks (**) or triple asterisks (***).\n2. If the user asks for the repository name or project name, explicitly state \"${repoName}\".\n3. Answer the question using the repository details provided above.\n4. Keep responses concise, clear, and helpful.`;\n}\n\nreturn [{\n  json: {\n    prompt,\n    citedFiles,\n    notIndexed: chunks.length === 0\n  }\n}];"
+      },
+      "id": "0debdfde-5ea8-4e3f-bd44-bb2af8762d17",
+      "name": "Build RAG Prompt",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -944,
+        224
+      ]
+    },
+    {
+      "parameters": {
+        "url": "https://api.groq.com/openai/v1/chat/completions",
+        "method": "POST",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "groqApi",
+        "sendBody": true,
+        "contentType": "json",
+        "specifyBody": "json",
+        "jsonBody": "={{ { model: \"openai/gpt-oss-20b\", messages: [ { role: \"system\", content: \"You are GitGrok Chat, an expert AI assistant answering questions about software repositories. Never output double or triple asterisks for formatting.\" }, { role: \"user\", content: $json.prompt } ], temperature: 0.7 } }}",
+        "options": {}
+      },
+      "id": "e966a7e7-b4ed-4e88-a02b-48c2a887c6ee",
+      "name": "Call Groq LLM",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -704,
+        224
+      ],
+      "credentials": {
+        "groqApi": {
+          "id": "DRqtJ8PZBMYWN9F0",
+          "name": "Groq account 15"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const res = $input.first().json || {};\nlet content = '';\nif (res.choices && res.choices[0] && res.choices[0].message) {\n  content = String(res.choices[0].message.content || '').trim();\n} else if (res.output || res.text) {\n  content = String(res.output || res.text).trim();\n}\n\ncontent = content.replace(/\\*{2,3}/g, '');\n\nconst rag = $(\"Build RAG Prompt\").first().json || {};\nconst bp = $(\"Build Chat Prompt\").first().json || {};\n\nreturn [{\n  json: {\n    type: 'done',\n    content: content || ('The target repository is ' + (bp.repoName || 'gitgrok')),\n    citedFiles: rag.citedFiles || [],\n    notIndexed: rag.notIndexed || false\n  }\n}];"
+      },
+      "id": "804b5df4-e1cf-4f04-8249-a17df778d7be",
+      "name": "Format Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -464,
+        224
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "firstIncomingItem",
+        "responseBody": "={{ $json }}",
+        "options": {
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Access-Control-Allow-Origin",
+                "value": "*"
+              },
+              {
+                "name": "Access-Control-Allow-Methods",
+                "value": "POST, OPTIONS"
+              },
+              {
+                "name": "Access-Control-Allow-Headers",
+                "value": "Content-Type"
+              }
+            ]
+          }
+        }
+      },
+      "id": "d4f5c2a1-4c7b-4b88-9f39-47580df587f9",
+      "name": "Respond to Webhook",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [
+        -224,
+        224
+      ]
+    }
+  ],
+  "connections": {
+    "Webhook (Receive)": {
+      "main": [
+        [
+          {
+            "node": "Build Chat Prompt",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Chat Prompt": {
+      "main": [
+        [
+          {
+            "node": "Embed Question",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embed Question": {
+      "main": [
+        [
+          {
+            "node": "Match Chunks",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Match Chunks": {
+      "main": [
+        [
+          {
+            "node": "Build RAG Prompt",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build RAG Prompt": {
+      "main": [
+        [
+          {
+            "node": "Call Groq LLM",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Call Groq LLM": {
+      "main": [
+        [
+          {
+            "node": "Format Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Response": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "meta": {
+    "instanceId": "5108cd956a95384b38f4fa3f85831dc02a4793b9014b3e181a2e4ba23947b00c"
+  }
+}
