@@ -16,7 +16,7 @@ function cleanMermaid(raw?: string): string {
   return cleaned
 }
 
-function buildSimpleDefaultDiagram(fileTree?: FileNode[], techStack?: TechStack[], repoName?: string): string {
+function buildSimpleDefaultDiagram(fileTree?: FileNode[], _techStack?: TechStack[], repoName?: string): string {
   const dirs = (fileTree || []).filter(n => n.type === 'dir' && !n.name.startsWith('.'))
   const mainDirs = dirs.slice(0, 4).map(d => d.name)
   const name = repoName || 'Repository'

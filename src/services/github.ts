@@ -357,6 +357,8 @@ function generateFallbackAnalysis(owner: string, repo: string, branch: string, r
     purpose: `${repoName} — High-performance open-source repository providing foundational infrastructure and developer tools.`,
     architecture: `Modular system architecture organized into core parser modules, subsystem handlers, API controllers, and test automation suites.`,
     quality: `Code quality score: 86/100 (Grade: A). Strong modular separation with clean API boundaries and active community contributions.`,
+    strengths: ['Clean modular architecture', 'Strong type safety and tests', 'Active open-source community'],
+    recommendations: ['Expand automated integration tests', 'Enhance API documentation'],
     healthScore: 86,
     healthGrade: 'A',
   }

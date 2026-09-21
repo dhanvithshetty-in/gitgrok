@@ -1,5 +1,6 @@
 export interface RepoAnalysis {
   id: string
+  name?: string
   repoUrl: string
   branch: string
   summary: RepoSummary
@@ -18,8 +19,8 @@ export interface RepoSummary {
   purpose: string
   architecture: string
   quality: string
-  strengths: string[]
-  recommendations: string[]
+  strengths?: string[]
+  recommendations?: string[]
   healthScore?: number
   healthGrade?: string
   score?: number
