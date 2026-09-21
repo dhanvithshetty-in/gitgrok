@@ -3,7 +3,7 @@
 Paste any GitHub URL. GitGrok returns a complete engineering overview of the repo: **stats, tech stack, file tree, an auto-generated architecture diagram, a code-health grade, and an AI chat assistant** that answers questions about the codebase — all grounded in the real repo data, no hallucinated stacks.
 
 🔗 **Live app:** https://dhanvith-n8n-frontend.slicearrow.com
-🐙 **This repo:** https://github.com/dhanvithshetty-in/gitgrok
+🐙 **This repo:** https://github.com/sirpi-in/csr-n8n-frontend
 
 ## Features
 
