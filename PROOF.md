@@ -55,7 +55,7 @@ This document certifies that the **GitGrok** codebase has been updated, audited,
 
 ## 3. Deployment Checklist for Remote Infrastructure
 
-To complete live deployment on `https://n8n-csr-interns.slicearrow.com`:
+To complete live deployment on your n8n instance:
 1. Execute [`supabase/schema.sql`](file:///c:/dhanvithshetty/gitgrok/supabase/schema.sql) in your Supabase SQL Editor.
 2. Replace `YOUR-SUPABASE-URL` placeholders in the workflow JSON files with your Supabase domain.
 3. Import all 3 workflows (`gitgrok-analyze.json`, `gitgrok-ingest.json`, `gitgrok-chat.json`) into n8n.

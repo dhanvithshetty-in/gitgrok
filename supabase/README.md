@@ -23,7 +23,7 @@ This directory contains the database schema and vector search configuration requ
    - `match_documents` RPC procedure created.
 
 ### Step 3: Configure n8n Webhook Credentials
-In your n8n workflow credentials manager (`https://n8n-csr-interns.slicearrow.com`):
+In your n8n workflow credentials manager:
 1. Create or edit an **HTTP Header Auth** credential named `supabase-api`.
 2. Set Header Name: `apikey`.
 3. Set Header Value: Your Supabase project's `anon` public key (found under Project Settings $\rightarrow$ API).

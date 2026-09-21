@@ -44,8 +44,8 @@ npm install
 Create a `.env` file:
 
 ```env
-# Base n8n webhook URL (public webhooks exposed by the backend instance)
-VITE_N8N_WEBHOOK_URL=https://n8n-csr-interns.slicearrow.com/webhook
+# Base n8n webhook URL
+VITE_N8N_WEBHOOK_URL=YOUR_N8N_WEBHOOK_URL
 ```
 
 Run the dev server:
